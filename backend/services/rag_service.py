@@ -10,6 +10,8 @@ from langchain_community.vectorstores import Chroma
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
+from services.rerank_service import EmbeddingRerankService
+
 
 class RagService:
     def __init__(
@@ -22,6 +24,8 @@ class RagService:
         embedding_model: str,
         app_name: str | None = None,
         app_url: str | None = None,
+        rerank_enabled: bool = False,
+        rerank_fetch_k: int = 8,
     ):
         self.data_dir = data_dir
         self.chroma_dir = chroma_dir
@@ -31,6 +35,8 @@ class RagService:
         self.embedding_model = embedding_model
         self.app_name = app_name
         self.app_url = app_url
+        self.rerank_enabled = rerank_enabled
+        self.rerank_fetch_k = max(rerank_fetch_k, 1)
 
         self._embeddings = None
         self._llm = None
@@ -147,17 +153,31 @@ class RagService:
                 "failed": failed,
             }
 
-    def answer_question(self, question: str, k: int):
-        vectorstore = self.get_vectorstore()
-        retriever = vectorstore.as_retriever(search_kwargs={"k": k})
+    def _build_prompt(self):
         system = (
             "You are a helpful assistant. Answer using only the provided context. "
             "If the answer is not in the context, say you don't know."
         )
-        prompt = ChatPromptTemplate.from_messages(
+        return ChatPromptTemplate.from_messages(
             [("system", system), ("human", "Question: {input}\n\nContext:\n{context}")]
         )
-        combine_docs_chain = create_stuff_documents_chain(self.get_llm(), prompt)
+
+    def _answer_with_rerank(self, question: str, k: int):
+        vectorstore = self.get_vectorstore()
+        docs = vectorstore.similarity_search(question, k=max(k, self.rerank_fetch_k))
+        reranker = EmbeddingRerankService(self.get_embeddings)
+        top_docs = reranker.rerank(question=question, docs=docs, top_k=k)
+        llm_chain = create_stuff_documents_chain(self.get_llm(), self._build_prompt())
+        answer = llm_chain.invoke({"input": question, "context": top_docs})
+        return answer, self.build_sources(top_docs)
+
+    def answer_question(self, question: str, k: int):
+        if self.rerank_enabled:
+            return self._answer_with_rerank(question=question, k=k)
+
+        vectorstore = self.get_vectorstore()
+        retriever = vectorstore.as_retriever(search_kwargs={"k": k})
+        combine_docs_chain = create_stuff_documents_chain(self.get_llm(), self._build_prompt())
         retrieval_chain = create_retrieval_chain(retriever, combine_docs_chain)
         result = retrieval_chain.invoke({"input": question})
         docs = result.get("context", [])

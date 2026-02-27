@@ -19,6 +19,7 @@ Record metric snapshots after each meaningful RAG change.
 | 2026-02-27 | Add architecture rules + CI architecture gate | TBD | TBD | TBD | Process/maintainability change; quality metrics unchanged |
 | 2026-02-27 | Backend split phase 1 (schemas + repositories) | TBD | TBD | TBD | Refactor-only change; quality metrics unchanged |
 | 2026-02-27 | Backend split phase 2 (services extraction) | TBD | TBD | TBD | Refactor-only change; quality metrics unchanged |
+| 2026-02-27 | Add optional embedding-based reranker | TBD | TBD | TBD | Added quality toggle; run live eval on/off for baseline decision |
 
 ## Template Row
 | YYYY-MM-DD | short change note | 0.00 | 0.00 | 0 | notes |

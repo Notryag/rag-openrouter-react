@@ -65,6 +65,13 @@ Keep entries short. One entry per focused work block.
 - Risk: Endpoint behavior still lacks full automated API regression coverage.
 - Next: Add reranker support with eval-based quality comparison.
 
+## 2026-02-27 (Reranker Support)
+- Goal: Deliver backlog task "Add reranker support" to improve retrieval quality while preserving current API shape.
+- Change: Added `EmbeddingRerankService` with cosine-similarity scoring over embedding vectors and integrated optional rerank path in `RagService` via env toggles (`OPENROUTER_RERANK_ENABLED`, `OPENROUTER_RERANK_FETCH_K`).
+- Result: Architecture gate passed; backend compile/import checks passed with new rerank service wiring.
+- Risk: Embedding-based rerank adds extra embedding calls, so latency/cost may increase until measured on live eval.
+- Next: Run full eval baseline with rerank on/off and decide default setting.
+
 ## Template
 - Goal:
 - Change:
