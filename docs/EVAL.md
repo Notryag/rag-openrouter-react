@@ -13,6 +13,7 @@ Record metric snapshots after each meaningful RAG change.
 | --- | --- | --- | --- | --- | --- |
 | 2026-02-27 | Initial baseline | TBD | TBD | TBD | Create eval set first |
 | 2026-02-27 | Add JWT auth + per-user sessions | TBD | TBD | TBD | Feature-only change; no quality eval run yet |
+| 2026-02-27 | Add eval dataset + runner script (20 cases) | TBD | TBD | TBD | Run `backend/scripts/run_eval.py` against live backend to fill numbers |
 
 ## Template Row
 | YYYY-MM-DD | short change note | 0.00 | 0.00 | 0 | notes |

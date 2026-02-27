@@ -1,0 +1,20 @@
+{"id":"core_ingest_api_protocol","question":"What protocol and payload format does the Ingest API use?","expected_keywords":["https","json"],"expected_sources":["product_overview.md"]}
+{"id":"retention_hot_storage","question":"How long does hot storage keep data by default?","expected_keywords":["30","days"],"expected_sources":["product_overview.md","faq.txt"]}
+{"id":"alert_delivery_channels","question":"Which channels does the alert engine use to send notifications?","expected_keywords":["email","webhook"],"expected_sources":["product_overview.md"]}
+{"id":"availability_target","question":"What is the monthly availability target?","expected_keywords":["99.9"],"expected_sources":["product_overview.md"]}
+{"id":"support_p2_sla","question":"What is the support response time for P2 incidents?","expected_keywords":["4","hours"],"expected_sources":["product_overview.md"]}
+{"id":"audit_log_retention","question":"How long are audit logs retained?","expected_keywords":["180","days"],"expected_sources":["product_overview.md"]}
+{"id":"dashboard_refresh_frequency","question":"How often are dashboards refreshed?","expected_keywords":["5","minutes"],"expected_sources":["faq.txt","meeting_notes.md"]}
+{"id":"archived_data_retention","question":"How long can archived data be kept?","expected_keywords":["2","years"],"expected_sources":["faq.txt"]}
+{"id":"export_format","question":"Can users export query results and in what format?","expected_keywords":["yes","csv"],"expected_sources":["faq.txt"]}
+{"id":"sso_protocols","question":"Which SSO standards are supported?","expected_keywords":["saml","openid"],"expected_sources":["faq.txt"]}
+{"id":"incident_reporting","question":"How should a production incident be reported?","expected_keywords":["support@acme.example","p1 incident"],"expected_sources":["faq.txt"]}
+{"id":"rate_limit_change","question":"What new ingest API rate limit was decided for enterprise tenants?","expected_keywords":["800","requests per minute"],"expected_sources":["meeting_notes.md"]}
+{"id":"alert_retry_policy","question":"What is the updated alert retry policy?","expected_keywords":["3","exponential backoff"],"expected_sources":["meeting_notes.md"]}
+{"id":"priya_action_item","question":"What action item was assigned to Priya and by what date?","expected_keywords":["2026-02-24","api limit"],"expected_sources":["meeting_notes.md"]}
+{"id":"queue_depth_risk","question":"What risk is mentioned for month-end reporting traffic?","expected_keywords":["queue depth"],"expected_sources":["meeting_notes.md"]}
+{"id":"vector_index_not_found_fix","question":"How to fix the error: Vector index not found. Run ingest first.","expected_keywords":["post /ingest","retry"],"expected_sources":["troubleshooting_guide.txt"]}
+{"id":"missing_api_key_fix","question":"What should be set when ingest fails with OPENROUTER_API_KEY is not set?","expected_keywords":["openrouter_api_key","openrouter_model"],"expected_sources":["troubleshooting_guide.txt"]}
+{"id":"frontend_network_error_fix","question":"What should be checked if frontend shows network error when calling backend?","expected_keywords":["localhost:8000","vite_api_base","cors"],"expected_sources":["troubleshooting_guide.txt"]}
+{"id":"weak_retrieval_fix","question":"What can be changed when answers have no relevant sources?","expected_keywords":["increase","k","6"],"expected_sources":["troubleshooting_guide.txt"]}
+{"id":"unknown_region","question":"Which cloud region is Acme hosted in by default?","expected_keywords":["don't know"],"expected_sources":[]}

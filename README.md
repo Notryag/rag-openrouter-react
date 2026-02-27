@@ -38,6 +38,18 @@ python -m uvicorn app:app --reload --port 8000
 - Put local files in `data/` (`.txt`, `.md`, `.pdf`).
 - Click **Ingest data/** in the UI, or call `POST /ingest`.
 
+## Evaluation
+Dataset and script are included:
+- Dataset: `backend/eval/qa_dataset.jsonl` (20 cases)
+- Runner: `backend/scripts/run_eval.py`
+
+Examples:
+```
+cd backend
+.\.venv\Scripts\python.exe scripts/run_eval.py --dry-run
+.\.venv\Scripts\python.exe scripts/run_eval.py --api-base http://localhost:8000 --k 4
+```
+
 ## Auth and sessions
 - `POST /auth/register` create user
 - `POST /auth/login` get bearer token

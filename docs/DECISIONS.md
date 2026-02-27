@@ -23,6 +23,13 @@ Track architecture decisions so future changes are deliberate.
 - Tradeoff: Fast to ship and easy local dev, but limited concurrency and no horizontal scaling.
 - Revisit trigger: Multi-instance deployment or strict enterprise identity integration.
 
+## ADR-004 JSONL Eval Dataset + Scripted Scoring
+- Date: 2026-02-27
+- Context: Need repeatable RAG quality checks instead of ad-hoc manual testing.
+- Decision: Store eval cases in `backend/eval/qa_dataset.jsonl` and run scoring with `backend/scripts/run_eval.py`.
+- Tradeoff: Lightweight and transparent, but keyword-based correctness is coarse and can miss semantic equivalence.
+- Revisit trigger: Need model-graded evaluation or larger benchmark coverage.
+
 ## Template
 - Date:
 - Context:

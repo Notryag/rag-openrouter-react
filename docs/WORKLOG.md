@@ -16,6 +16,13 @@ Keep entries short. One entry per focused work block.
 - Risk: JWT secret in local env is weak by default; production must use >=32-byte secret.
 - Next: Build RAG eval dataset and script to establish quality baseline.
 
+## 2026-02-27 (Eval Dataset + Runner)
+- Goal: Deliver P1 backlog item for measurable RAG evaluation.
+- Change: Added `backend/eval/qa_dataset.jsonl` (20 eval cases) and `backend/scripts/run_eval.py` with dry-run validation and online `/chat` scoring.
+- Result: Dry-run dataset validation passed; backend import and runner syntax checks passed.
+- Risk: Live score baseline still depends on running backend with valid API key and ingested index.
+- Next: Run full eval and fill baseline metrics in `docs/EVAL.md`.
+
 ## Template
 - Goal:
 - Change:

@@ -11,6 +11,7 @@ __pycache__/
 # Backend runtime
 chroma_db/
 backend/app.db
+backend/eval/last_report.json
 
 # Frontend
 frontend/node_modules/
