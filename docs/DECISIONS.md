@@ -51,6 +51,20 @@ Track architecture decisions so future changes are deliberate.
 - Tradeoff: Better consistency and maintainability, with stricter constraints that may require small refactors before new feature work.
 - Revisit trigger: Monolith files split into layered modules and stricter caps become practical.
 
+## ADR-008 Backend Split Strategy (Incremental, No Behavior Change)
+- Date: 2026-02-27
+- Context: `backend/app.py` accumulated API models, SQL, business logic, and routing in one file.
+- Decision: Use phased extraction: (1) schemas + repositories, (2) services, (3) routers; each phase must preserve behavior and pass smoke tests.
+- Tradeoff: More commits and temporary indirection, but much lower regression risk than big-bang rewrite.
+- Revisit trigger: If service boundaries become stable and test coverage increases, accelerate to router-level modularization.
+
+## ADR-009 Service Composition in app.py During Transition
+- Date: 2026-02-27
+- Context: Need to reduce monolith quickly while keeping route behavior stable.
+- Decision: Keep `app.py` as composition root that wires `AuthService`, `RagService`, `IngestJobService`, and `SessionService`.
+- Tradeoff: Clear separation of business logic, but route declarations are still centralized until router split is complete.
+- Revisit trigger: Phase 3 router extraction starts.
+
 ## Template
 - Date:
 - Context:

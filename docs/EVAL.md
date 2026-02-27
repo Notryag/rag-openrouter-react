@@ -17,6 +17,8 @@ Record metric snapshots after each meaningful RAG change.
 | 2026-02-27 | Add request tracing + X-Request-ID middleware | TBD | TBD | TBD | Observability change only; quality metrics unchanged |
 | 2026-02-27 | Move ingest to async jobs + polling UI | TBD | TBD | TBD | Ingestion architecture change; quality metrics unchanged |
 | 2026-02-27 | Add architecture rules + CI architecture gate | TBD | TBD | TBD | Process/maintainability change; quality metrics unchanged |
+| 2026-02-27 | Backend split phase 1 (schemas + repositories) | TBD | TBD | TBD | Refactor-only change; quality metrics unchanged |
+| 2026-02-27 | Backend split phase 2 (services extraction) | TBD | TBD | TBD | Refactor-only change; quality metrics unchanged |
 
 ## Template Row
 | YYYY-MM-DD | short change note | 0.00 | 0.00 | 0 | notes |

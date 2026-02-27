@@ -44,6 +44,20 @@ Keep entries short. One entry per focused work block.
 - Risk: Legacy files (`backend/app.py`, `frontend/src/App.jsx`) still large; guardrails currently cap growth rather than full split.
 - Next: Extract first chunk from monolith files into layer folders in next feature tasks.
 
+## 2026-02-27 (Backend Split Phase 1)
+- Goal: Start monolith reduction by extracting schemas and DB repositories from `backend/app.py`.
+- Change: Moved API models to `backend/schemas/api.py`; moved DB init and user/session/ingest job SQL operations to `backend/repositories/*`.
+- Result: `backend/app.py` reduced from 725 to 520 lines; architecture check passed; backend compile and smoke tests passed.
+- Risk: Service/business logic still lives in `app.py`; routers/services split is pending.
+- Next: Phase 2 extract auth/ingest/chat logic into `backend/services/`.
+
+## 2026-02-27 (Backend Split Phase 2)
+- Goal: Extract business logic from `backend/app.py` into service layer without behavior changes.
+- Change: Added `services/auth_service.py`, `services/rag_service.py`, `services/ingest_job_service.py`, `services/session_service.py`; rewired `app.py` to route + dependency composition only.
+- Result: `backend/app.py` reduced from 520 to 252 lines; architecture check, compile checks, and API smoke tests passed.
+- Risk: Routing is still centralized in `app.py`; next split should move endpoint groups into `routers/`.
+- Next: Phase 3 split auth/session/ingest/chat routes into `backend/routers/` modules.
+
 ## Template
 - Goal:
 - Change:
