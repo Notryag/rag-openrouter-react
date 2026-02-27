@@ -4,8 +4,9 @@
 
 1. Pull latest changes.
 2. Pick one task from `docs/BACKLOG.md` and set it to `doing`.
-3. Commit in small chunks (one logical change per commit).
-4. Mark task `done` only after verification.
+3. Follow `docs/ARCHITECTURE_RULES.md` for file placement and size guardrails.
+4. Commit in small chunks (one logical change per commit).
+5. Mark task `done` only after verification.
 
 ## Command Cheatsheet
 
@@ -38,5 +39,6 @@ Types:
 
 - Code updated
 - Basic run/build check passed
+- `python scripts/check_architecture.py` passed
 - `docs/WORKLOG.md` updated
 - `docs/BACKLOG.md` status updated

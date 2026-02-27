@@ -44,6 +44,13 @@ Track architecture decisions so future changes are deliberate.
 - Tradeoff: Better responsiveness and visibility, but worker is single-process and not distributed.
 - Revisit trigger: Need multi-instance deployment or high ingest concurrency.
 
+## ADR-007 Architecture Gate as Default Workflow
+- Date: 2026-02-27
+- Context: AI changes tended to accumulate logic in monolith files unless repeatedly instructed.
+- Decision: Add persistent architecture rules (`docs/ARCHITECTURE_RULES.md`) and enforce via `scripts/check_architecture.py` + CI.
+- Tradeoff: Better consistency and maintainability, with stricter constraints that may require small refactors before new feature work.
+- Revisit trigger: Monolith files split into layered modules and stricter caps become practical.
+
 ## Template
 - Date:
 - Context:

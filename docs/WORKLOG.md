@@ -37,6 +37,13 @@ Keep entries short. One entry per focused work block.
 - Risk: Worker is process-local; horizontal scaling still needs shared queue/worker.
 - Next: Add reranker support with measurable eval impact.
 
+## 2026-02-27 (Architecture Guardrails)
+- Goal: Make architecture quality default without repeating prompts every task.
+- Change: Added `docs/ARCHITECTURE_RULES.md`, `AGENTS.md`, `scripts/check_architecture.py`, layer skeleton folders, and GitHub CI workflow.
+- Result: Architecture check passed locally; backend compile passed; frontend lint/build passed.
+- Risk: Legacy files (`backend/app.py`, `frontend/src/App.jsx`) still large; guardrails currently cap growth rather than full split.
+- Next: Extract first chunk from monolith files into layer folders in next feature tasks.
+
 ## Template
 - Goal:
 - Change:

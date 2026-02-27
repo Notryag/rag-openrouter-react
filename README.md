@@ -79,3 +79,13 @@ npm run dev
 ```
 
 Open `http://localhost:5173`.
+
+## Architecture guardrails
+- Human-readable rules: `docs/ARCHITECTURE_RULES.md`
+- Machine gate: `python scripts/check_architecture.py`
+- Repo agent defaults: `AGENTS.md`
+
+Run locally before commit:
+```
+python scripts/check_architecture.py
+```

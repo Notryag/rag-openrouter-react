@@ -9,6 +9,7 @@ Rule: keep at most 3 tasks in `doing`.
 | Build RAG eval dataset and script | P1 | done | Codex | 20-50 QA pairs |
 | Add tracing and request IDs | P1 | done | Codex | FastAPI middleware + logs |
 | Improve ingestion to async job | P2 | done | Codex | queue + worker |
+| Establish architecture guardrails + CI gate | P1 | done | Codex | rules doc + check script + workflow |
 | Add reranker support | P2 | todo | | quality vs latency |
 | Add CI checks | P2 | todo | | lint + smoke test |
 
