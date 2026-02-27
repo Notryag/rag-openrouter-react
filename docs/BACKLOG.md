@@ -12,7 +12,7 @@ Rule: keep at most 3 tasks in `doing`.
 | Establish architecture guardrails + CI gate | P1 | done | Codex | rules doc + check script + workflow |
 | Refactor backend monolith (phase 1: schemas + repositories) | P1 | done | Codex | reduce app.py and isolate DB/model concerns |
 | Refactor backend monolith (phase 2: services extraction) | P1 | done | Codex | move auth/rag/ingest/session logic to services |
-| Refactor backend monolith (phase 3: routers split) | P1 | todo | | split routes from app.py into routers modules |
+| Refactor backend monolith (phase 3: routers split) | P1 | done | Codex | split routes from app.py into routers modules |
 | Add reranker support | P2 | todo | | quality vs latency |
 | Add CI checks | P2 | todo | | lint + smoke test |
 
