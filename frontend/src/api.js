@@ -93,6 +93,25 @@ export async function ingest(reset = true) {
   return handleResponse(res);
 }
 
+export async function startIngestJob(reset = true) {
+  const res = await fetch(`${API_BASE}/ingest/jobs`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify({ reset }),
+  });
+  return handleResponse(res);
+}
+
+export async function getIngestJob(jobId) {
+  const res = await fetch(`${API_BASE}/ingest/jobs/${jobId}`, {
+    headers: { ...getAuthHeaders() },
+  });
+  return handleResponse(res);
+}
+
 export async function chat(question, k = 4, sessionId = null) {
   const res = await fetch(`${API_BASE}/chat`, {
     method: "POST",

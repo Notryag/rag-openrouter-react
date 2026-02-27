@@ -15,6 +15,7 @@ Record metric snapshots after each meaningful RAG change.
 | 2026-02-27 | Add JWT auth + per-user sessions | TBD | TBD | TBD | Feature-only change; no quality eval run yet |
 | 2026-02-27 | Add eval dataset + runner script (20 cases) | TBD | TBD | TBD | Run `backend/scripts/run_eval.py` against live backend to fill numbers |
 | 2026-02-27 | Add request tracing + X-Request-ID middleware | TBD | TBD | TBD | Observability change only; quality metrics unchanged |
+| 2026-02-27 | Move ingest to async jobs + polling UI | TBD | TBD | TBD | Ingestion architecture change; quality metrics unchanged |
 
 ## Template Row
 | YYYY-MM-DD | short change note | 0.00 | 0.00 | 0 | notes |

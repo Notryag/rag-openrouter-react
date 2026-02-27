@@ -3,13 +3,14 @@ import {
   chat,
   clearToken,
   createSession,
+  getIngestJob,
   getSessionMessages,
   getToken,
-  ingest,
   listSessions,
   login,
   me,
   register,
+  startIngestJob,
 } from "./api";
 import "./App.css";
 
@@ -19,6 +20,7 @@ export default function App() {
   const [sources, setSources] = useState([]);
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
+  const [ingesting, setIngesting] = useState(false);
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -115,15 +117,34 @@ export default function App() {
   };
 
   const handleIngest = async () => {
-    setStatus("Indexing data/...");
+    setIngesting(true);
+    setStatus("Queueing ingest job...");
     setAnswer("");
     setSources([]);
     try {
-      const result = await ingest(true);
-      const failed = result.failed?.length ? `, failed: ${result.failed.length}` : "";
-      setStatus(`Indexed ${result.files} files, ${result.chunks} chunks${failed}.`);
+      const createdJob = await startIngestJob(true);
+      setStatus(`Ingest job #${createdJob.id} queued...`);
+
+      const deadline = Date.now() + 3 * 60 * 1000;
+      while (Date.now() < deadline) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const job = await getIngestJob(createdJob.id);
+        if (job.status === "queued" || job.status === "running") {
+          setStatus(`Ingest job #${job.id} ${job.status}...`);
+          continue;
+        }
+        if (job.status === "succeeded") {
+          const failed = job.failed?.length ? `, failed: ${job.failed.length}` : "";
+          setStatus(`Indexed ${job.files} files, ${job.chunks} chunks${failed}.`);
+          return;
+        }
+        throw new Error(job.error || "Ingest job failed.");
+      }
+      throw new Error("Ingest job timed out after 3 minutes.");
     } catch (err) {
       setStatus(`Ingest failed: ${err.message}`);
+    } finally {
+      setIngesting(false);
     }
   };
 
@@ -154,7 +175,7 @@ export default function App() {
 
   const statusTone = status.startsWith("Ingest failed") || status.startsWith("Chat failed") || status.startsWith("Login failed") || status.startsWith("Register failed")
     ? "error"
-    : status === "Thinking..." || status.startsWith("Indexing")
+    : status === "Thinking..." || status.startsWith("Indexing") || status.startsWith("Ingest job") || status.startsWith("Queueing ingest job")
       ? "busy"
       : status === "Ready." || status.startsWith("Logged in") || status.startsWith("Session loaded") || status.startsWith("New session")
         ? "success"
@@ -203,8 +224,8 @@ export default function App() {
       <main className="layout">
         <section className="panel reveal delay-1">
           <div className="actionRow">
-            <button className="btn secondary" onClick={handleIngest}>
-              Ingest data/
+            <button className="btn secondary" onClick={handleIngest} disabled={ingesting}>
+              {ingesting ? "Indexing..." : "Ingest data/"}
             </button>
             <span className={`status ${statusTone}`}>{status || "Idle"}</span>
           </div>

@@ -6,6 +6,8 @@ import secrets
 import time
 import uuid
 import logging
+import threading
+import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import List, Optional
@@ -99,6 +101,18 @@ class IngestRequest(BaseModel):
     reset: bool = True
 
 
+class IngestJobResponse(BaseModel):
+    id: int
+    status: str
+    reset: bool
+    files: int
+    chunks: int
+    failed: List[str]
+    error: Optional[str] = None
+    created_at: str
+    updated_at: str
+
+
 class ChatRequest(BaseModel):
     question: str
     k: int = 4
@@ -114,6 +128,7 @@ class ChatResponse(BaseModel):
 _embeddings = None
 _llm = None
 _vectorstore = None
+_ingest_lock = threading.Lock()
 
 
 app = FastAPI(title="RAG API")
@@ -261,6 +276,21 @@ def init_db():
             )
             """
         )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS ingest_jobs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                status TEXT NOT NULL,
+                reset INTEGER NOT NULL,
+                files INTEGER NOT NULL DEFAULT 0,
+                chunks INTEGER NOT NULL DEFAULT 0,
+                failed_json TEXT NOT NULL DEFAULT '[]',
+                error TEXT,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            )
+            """
+        )
 
 
 def now_iso() -> str:
@@ -393,6 +423,137 @@ def build_sources(docs):
     return sources
 
 
+def run_ingest(reset: bool):
+    global _vectorstore
+    with _ingest_lock:
+        files = collect_files()
+        if not files:
+            raise ValueError("No supported files in data/")
+        if reset and CHROMA_DIR.exists():
+            shutil.rmtree(CHROMA_DIR)
+        docs, failed = load_documents(files)
+        if not docs:
+            raise ValueError("No documents loaded.")
+        splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=150)
+        chunks = splitter.split_documents(docs)
+        vectorstore = Chroma.from_documents(
+            chunks,
+            embedding=get_embeddings(),
+            persist_directory=str(CHROMA_DIR),
+            collection_name="rag",
+        )
+        _vectorstore = vectorstore
+        return {
+            "files": len(files),
+            "chunks": len(chunks),
+            "failed": failed,
+        }
+
+
+def _row_to_ingest_job(row: sqlite3.Row) -> IngestJobResponse:
+    failed = []
+    raw_failed = row["failed_json"] or "[]"
+    try:
+        parsed = json.loads(raw_failed)
+        if isinstance(parsed, list):
+            failed = [str(item) for item in parsed]
+    except json.JSONDecodeError:
+        failed = [raw_failed]
+    return IngestJobResponse(
+        id=int(row["id"]),
+        status=row["status"],
+        reset=bool(row["reset"]),
+        files=int(row["files"]),
+        chunks=int(row["chunks"]),
+        failed=failed,
+        error=row["error"],
+        created_at=row["created_at"],
+        updated_at=row["updated_at"],
+    )
+
+
+def _update_ingest_job(job_id: int, **fields):
+    if not fields:
+        return
+    fields["updated_at"] = now_iso()
+    keys = list(fields.keys())
+    assignments = ", ".join(f"{key} = ?" for key in keys)
+    values = [fields[key] for key in keys]
+    values.append(job_id)
+    with get_db() as conn:
+        conn.execute(
+            f"UPDATE ingest_jobs SET {assignments} WHERE id = ?",
+            values,
+        )
+
+
+def _execute_ingest_job(job_id: int, reset: bool):
+    _update_ingest_job(job_id, status="running", error=None)
+    try:
+        result = run_ingest(reset)
+        _update_ingest_job(
+            job_id,
+            status="succeeded",
+            files=result["files"],
+            chunks=result["chunks"],
+            failed_json=json.dumps(result["failed"]),
+            error=None,
+        )
+        logger.info("ingest_job_succeeded job_id=%s files=%s chunks=%s", job_id, result["files"], result["chunks"])
+    except Exception as exc:
+        _update_ingest_job(
+            job_id,
+            status="failed",
+            error=str(exc),
+        )
+        logger.exception("ingest_job_failed job_id=%s error=%s", job_id, exc)
+
+
+def create_ingest_job(reset: bool) -> int:
+    timestamp = now_iso()
+    with get_db() as conn:
+        cur = conn.execute(
+            """
+            INSERT INTO ingest_jobs (status, reset, files, chunks, failed_json, error, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            ("queued", 1 if reset else 0, 0, 0, "[]", None, timestamp, timestamp),
+        )
+        job_id = int(cur.lastrowid)
+    worker = threading.Thread(
+        target=_execute_ingest_job,
+        args=(job_id, reset),
+        daemon=True,
+    )
+    worker.start()
+    return job_id
+
+
+def get_ingest_job(job_id: int) -> IngestJobResponse:
+    with get_db() as conn:
+        row = conn.execute(
+            "SELECT * FROM ingest_jobs WHERE id = ?",
+            (job_id,),
+        ).fetchone()
+    if row is None:
+        raise HTTPException(status_code=404, detail="Ingest job not found")
+    return _row_to_ingest_job(row)
+
+
+def list_ingest_jobs(limit: int = 20) -> List[IngestJobResponse]:
+    limit = max(1, min(limit, 200))
+    with get_db() as conn:
+        rows = conn.execute(
+            """
+            SELECT * FROM ingest_jobs
+            ORDER BY id DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+    return [_row_to_ingest_job(row) for row in rows]
+
+
 def make_session_title(question: str) -> str:
     cleaned = " ".join(question.split()).strip()
     if not cleaned:
@@ -505,29 +666,28 @@ def get_session_messages(session_id: int, user=Depends(get_current_user)):
 
 @app.post("/ingest")
 def ingest(payload: IngestRequest):
-    global _vectorstore
-    files = collect_files()
-    if not files:
-        raise HTTPException(status_code=400, detail="No supported files in data/")
-    if payload.reset and CHROMA_DIR.exists():
-        shutil.rmtree(CHROMA_DIR)
-    docs, failed = load_documents(files)
-    if not docs:
-        raise HTTPException(status_code=400, detail="No documents loaded.")
-    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=150)
-    chunks = splitter.split_documents(docs)
-    vectorstore = Chroma.from_documents(
-        chunks,
-        embedding=get_embeddings(),
-        persist_directory=str(CHROMA_DIR),
-        collection_name="rag",
-    )
-    _vectorstore = vectorstore
-    return {
-        "files": len(files),
-        "chunks": len(chunks),
-        "failed": failed,
-    }
+    try:
+        return run_ingest(payload.reset)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except RuntimeError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/ingest/jobs", response_model=IngestJobResponse)
+def create_ingest_job_endpoint(payload: IngestRequest):
+    job_id = create_ingest_job(payload.reset)
+    return get_ingest_job(job_id)
+
+
+@app.get("/ingest/jobs", response_model=List[IngestJobResponse])
+def list_ingest_jobs_endpoint(limit: int = 20):
+    return list_ingest_jobs(limit)
+
+
+@app.get("/ingest/jobs/{job_id}", response_model=IngestJobResponse)
+def get_ingest_job_endpoint(job_id: int):
+    return get_ingest_job(job_id)
 
 
 @app.post("/chat", response_model=ChatResponse)

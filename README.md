@@ -37,7 +37,12 @@ python -m uvicorn app:app --reload --port 8000
 
 ## Data ingest
 - Put local files in `data/` (`.txt`, `.md`, `.pdf`).
-- Click **Ingest data/** in the UI, or call `POST /ingest`.
+- Frontend now starts an async ingest job and polls status automatically.
+- API options:
+  - `POST /ingest` (sync, legacy)
+  - `POST /ingest/jobs` (create async job)
+  - `GET /ingest/jobs/{job_id}` (query status)
+  - `GET /ingest/jobs?limit=20` (list recent jobs)
 
 ## Evaluation
 Dataset and script are included:

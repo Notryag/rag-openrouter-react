@@ -30,6 +30,13 @@ Keep entries short. One entry per focused work block.
 - Risk: Current tracing is log-based only; no distributed trace backend yet.
 - Next: Add CI checks and baseline API smoke tests in pipeline.
 
+## 2026-02-27 (Async Ingest Jobs)
+- Goal: Deliver P2 backlog item to decouple ingest from request lifecycle.
+- Change: Added `ingest_jobs` persistence, background worker thread execution, and async ingest APIs (`POST/GET /ingest/jobs*`); frontend now polls job status.
+- Result: Backend compile/import passed, async ingest smoke test passed, frontend build passed.
+- Risk: Worker is process-local; horizontal scaling still needs shared queue/worker.
+- Next: Add reranker support with measurable eval impact.
+
 ## Template
 - Goal:
 - Change:

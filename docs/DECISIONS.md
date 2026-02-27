@@ -37,6 +37,13 @@ Track architecture decisions so future changes are deliberate.
 - Tradeoff: Low implementation cost, but still lacks distributed tracing storage/search.
 - Revisit trigger: Multi-service architecture or on-call need for cross-service trace views.
 
+## ADR-006 Async Ingest via Job Table + Background Worker
+- Date: 2026-02-27
+- Context: Synchronous ingest blocks API requests and gives poor UX for larger corpora.
+- Decision: Introduce `ingest_jobs` table and background worker thread; expose create/query/list ingest job APIs.
+- Tradeoff: Better responsiveness and visibility, but worker is single-process and not distributed.
+- Revisit trigger: Need multi-instance deployment or high ingest concurrency.
+
 ## Template
 - Date:
 - Context:
