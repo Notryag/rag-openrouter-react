@@ -16,6 +16,13 @@ Track architecture decisions so future changes are deliberate.
 - Tradeoff: Easy model switching, but vendor dependency for routing and quotas.
 - Revisit trigger: Enterprise compliance requirement or strict private model hosting.
 
+## ADR-003 JWT + SQLite for Local Auth and Session History
+- Date: 2026-02-27
+- Context: Need per-user chat history quickly without adding external infra.
+- Decision: Use JWT bearer auth and a local SQLite database (`backend/app.db`) for users, sessions, and messages.
+- Tradeoff: Fast to ship and easy local dev, but limited concurrency and no horizontal scaling.
+- Revisit trigger: Multi-instance deployment or strict enterprise identity integration.
+
 ## Template
 - Date:
 - Context:

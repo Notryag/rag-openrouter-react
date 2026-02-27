@@ -12,6 +12,7 @@ Record metric snapshots after each meaningful RAG change.
 | Date | Change | answer_correctness | citation_precision | p95_latency_ms | Notes |
 | --- | --- | --- | --- | --- | --- |
 | 2026-02-27 | Initial baseline | TBD | TBD | TBD | Create eval set first |
+| 2026-02-27 | Add JWT auth + per-user sessions | TBD | TBD | TBD | Feature-only change; no quality eval run yet |
 
 ## Template Row
 | YYYY-MM-DD | short change note | 0.00 | 0.00 | 0 | notes |

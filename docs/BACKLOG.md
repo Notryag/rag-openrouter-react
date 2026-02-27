@@ -5,7 +5,7 @@ Rule: keep at most 3 tasks in `doing`.
 
 | Task | Priority | Status | Owner | Notes |
 | --- | --- | --- | --- | --- |
-| Add auth and per-user sessions | P1 | todo | | JWT login + chat history |
+| Add auth and per-user sessions | P1 | done | Codex | JWT login + chat history |
 | Build RAG eval dataset and script | P1 | todo | | 20-50 QA pairs |
 | Add tracing and request IDs | P1 | todo | | FastAPI middleware + logs |
 | Improve ingestion to async job | P2 | todo | | queue + worker |

@@ -20,6 +20,8 @@ OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 # Optional for OpenRouter analytics
 OPENROUTER_APP_NAME=rag-demo
 OPENROUTER_APP_URL=http://localhost
+JWT_SECRET=replace-with-a-long-random-secret
+ACCESS_TOKEN_EXPIRE_MINUTES=720
 ```
 
 2) Install deps and run:
@@ -29,12 +31,22 @@ cd backend
 python -m venv .venv
 .\.venv\Scripts\activate
 pip install -r requirements.txt
-uvicorn app:app --reload
+python -m uvicorn app:app --reload --port 8000
 ```
 
 ## Data ingest
 - Put local files in `data/` (`.txt`, `.md`, `.pdf`).
 - Click **Ingest data/** in the UI, or call `POST /ingest`.
+
+## Auth and sessions
+- `POST /auth/register` create user
+- `POST /auth/login` get bearer token
+- `GET /auth/me` validate token
+- `GET /sessions` list current user's sessions
+- `POST /sessions` create a session
+- `GET /sessions/{session_id}/messages` list session history
+
+The frontend stores the bearer token in local storage and automatically sends it for session APIs.
 
 ## Frontend setup
 ```
