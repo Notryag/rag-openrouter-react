@@ -58,6 +58,13 @@ Keep entries short. One entry per focused work block.
 - Risk: Routing is still centralized in `app.py`; next split should move endpoint groups into `routers/`.
 - Next: Phase 3 split auth/session/ingest/chat routes into `backend/routers/` modules.
 
+## 2026-02-27 (Backend Split Phase 3)
+- Goal: Deliver first todo task by splitting route declarations from `backend/app.py` into `backend/routers/`.
+- Change: Added dedicated router modules for auth/session/ingest/chat endpoints and converted `app.py` to composition-only `include_router` wiring.
+- Result: Architecture gate passed; backend compile/import checks passed after router extraction.
+- Risk: Endpoint behavior still lacks full automated API regression coverage.
+- Next: Add reranker support with eval-based quality comparison.
+
 ## Template
 - Goal:
 - Change:

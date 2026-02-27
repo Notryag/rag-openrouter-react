@@ -3,26 +3,19 @@ import os
 import time
 import uuid
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from repositories.db import init_db
-from schemas.api import (
-    ChatRequest,
-    ChatResponse,
-    IngestJobResponse,
-    IngestRequest,
-    LoginRequest,
-    RegisterRequest,
-    SessionCreateRequest,
-    SessionMessage,
-    SessionResponse,
-    TokenResponse,
-    UserResponse,
+from routers import (
+    create_auth_router,
+    create_chat_router,
+    create_ingest_router,
+    create_session_router,
 )
 from services.auth_service import AuthService
 from services.ingest_job_service import IngestJobService
@@ -139,114 +132,23 @@ def on_startup():
     init_db()
 
 
-@app.post("/auth/register", response_model=UserResponse)
-def register(payload: RegisterRequest):
-    username = payload.username.strip()
-    if not username:
-        raise HTTPException(status_code=400, detail="Username is required")
-    created = auth_service.register_user(username, payload.password)
-    return UserResponse(id=created["id"], username=created["username"])
-
-
-@app.post("/auth/login", response_model=TokenResponse)
-def login(payload: LoginRequest):
-    username = payload.username.strip()
-    result = auth_service.login_user(username, payload.password)
-    return TokenResponse(access_token=result["access_token"], username=result["username"])
-
-
-@app.get("/auth/me", response_model=UserResponse)
-def me(user=Depends(get_current_user)):
-    return UserResponse(id=user["id"], username=user["username"])
-
-
-@app.get("/sessions", response_model=List[SessionResponse])
-def list_sessions(user=Depends(get_current_user)):
-    rows = session_service.list_sessions(user["id"])
-    return [
-        SessionResponse(
-            id=int(row["id"]),
-            title=row["title"],
-            created_at=row["created_at"],
-            updated_at=row["updated_at"],
-        )
-        for row in rows
-    ]
-
-
-@app.post("/sessions", response_model=SessionResponse)
-def create_session(payload: SessionCreateRequest, user=Depends(get_current_user)):
-    title = (payload.title or "New chat").strip() or "New chat"
-    session_id = session_service.create_session_for_user(user["id"], title)
-    row = session_service.get_session(session_id)
-    return SessionResponse(
-        id=int(row["id"]),
-        title=row["title"],
-        created_at=row["created_at"],
-        updated_at=row["updated_at"],
+app.include_router(create_auth_router(auth_service=auth_service, get_current_user=get_current_user))
+app.include_router(
+    create_session_router(
+        session_service=session_service,
+        get_current_user=get_current_user,
     )
-
-
-@app.get("/sessions/{session_id}/messages", response_model=List[SessionMessage])
-def get_session_messages(session_id: int, user=Depends(get_current_user)):
-    session_service.ensure_session_owner(session_id, user["id"])
-    rows = session_service.list_messages(session_id)
-    return [
-        SessionMessage(
-            question=row["question"],
-            answer=row["answer"],
-            created_at=row["created_at"],
-        )
-        for row in rows
-    ]
-
-
-@app.post("/ingest")
-def ingest(payload: IngestRequest):
-    try:
-        return rag_service.run_ingest(payload.reset)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
-    except RuntimeError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
-
-
-@app.post("/ingest/jobs", response_model=IngestJobResponse)
-def create_ingest_job_endpoint(payload: IngestRequest):
-    job_id = ingest_job_service.create_ingest_job(payload.reset)
-    return ingest_job_service.get_ingest_job(job_id)
-
-
-@app.get("/ingest/jobs", response_model=List[IngestJobResponse])
-def list_ingest_jobs_endpoint(limit: int = 20):
-    return ingest_job_service.list_ingest_jobs(limit)
-
-
-@app.get("/ingest/jobs/{job_id}", response_model=IngestJobResponse)
-def get_ingest_job_endpoint(job_id: int):
-    return ingest_job_service.get_ingest_job(job_id)
-
-
-@app.post("/chat", response_model=ChatResponse)
-def chat(payload: ChatRequest, user=Depends(get_current_user_optional)):
-    try:
-        answer, sources = rag_service.answer_question(payload.question, payload.k)
-    except RuntimeError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
-
-    session_id = payload.session_id
-    if user is not None:
-        if session_id is None:
-            session_id = session_service.create_session_for_user(
-                user["id"],
-                session_service.make_session_title(payload.question),
-            )
-        else:
-            session_service.ensure_session_owner(session_id, user["id"])
-        session_service.save_message(session_id, payload.question, answer)
-
-    return ChatResponse(
-        answer=answer,
-        sources=sources,
-        session_id=session_id,
+)
+app.include_router(
+    create_ingest_router(
+        rag_service=rag_service,
+        ingest_job_service=ingest_job_service,
     )
+)
+app.include_router(
+    create_chat_router(
+        rag_service=rag_service,
+        session_service=session_service,
+        get_current_user_optional=get_current_user_optional,
+    )
+)

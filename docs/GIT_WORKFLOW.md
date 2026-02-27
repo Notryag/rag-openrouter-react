@@ -42,3 +42,5 @@ Types:
 - `python scripts/check_architecture.py` passed
 - `docs/WORKLOG.md` updated
 - `docs/BACKLOG.md` status updated
+- `docs/DECISIONS.md` updated when architecture direction changes
+- If task touched workflow/rules, sync `docs/GIT_WORKFLOW.md` and `docs/ARCHITECTURE_RULES.md`

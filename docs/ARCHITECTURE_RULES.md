@@ -15,6 +15,7 @@ This file defines the default coding architecture for this repository.
   - `backend/core/` config, logging, security
   - `backend/schemas/` request/response models
 - `backend/app.py` is legacy composition/wiring only.
+- Route handlers should live in `backend/routers/` modules and be mounted via `app.include_router(...)`.
 - New business logic should not be added to `backend/app.py`.
 - New `.py` source files should be placed under the layer folders above (or `backend/scripts/` for tooling scripts).
 
