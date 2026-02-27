@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+.env
+.env.*
+!.env.example
+
+# Backend runtime
+chroma_db/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend.manual.bak/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

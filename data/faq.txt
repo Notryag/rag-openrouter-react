@@ -1,0 +1,16 @@
+Acme Analytics FAQ
+
+Q: How often are dashboards updated?
+A: Dashboards are refreshed every 5 minutes.
+
+Q: What is the default data retention period?
+A: Hot storage keeps data for 30 days. Archived data can be kept for up to 2 years.
+
+Q: Can I export query results?
+A: Yes. CSV export is available for all dashboard widgets.
+
+Q: Does the platform support single sign-on?
+A: Yes. SSO is supported through SAML 2.0 and OpenID Connect.
+
+Q: How do I report a production incident?
+A: Email support@acme.example with the subject prefix "P1 Incident" and include region, time, and impact.

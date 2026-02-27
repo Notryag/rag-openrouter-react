@@ -1,0 +1,25 @@
+Troubleshooting Guide
+
+Issue: /chat endpoint returns "Vector index not found. Run ingest first."
+Fix:
+1) Ensure there are files in the data/ directory.
+2) Call POST /ingest with {"reset": true}.
+3) Retry POST /chat.
+
+Issue: Ingest fails with "OPENROUTER_API_KEY is not set"
+Fix:
+1) Create backend/.env.
+2) Set OPENROUTER_API_KEY and OPENROUTER_MODEL.
+3) Restart the backend process.
+
+Issue: Frontend shows network error when calling backend
+Fix:
+1) Confirm backend runs on http://localhost:8000.
+2) Check VITE_API_BASE in frontend env config.
+3) Verify CORS allow_origins includes frontend host and port.
+
+Issue: No relevant sources in answers
+Fix:
+1) Add more specific domain documents.
+2) Increase k in chat request from 4 to 6.
+3) Re-ingest after updating documents.
