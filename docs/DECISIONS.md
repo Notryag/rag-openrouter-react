@@ -65,6 +65,13 @@ Track architecture decisions so future changes are deliberate.
 - Tradeoff: Clear separation of business logic, but route declarations are still centralized until router split is complete.
 - Revisit trigger: Phase 3 router extraction starts.
 
+## ADR-010 Optional Embedding-Based Reranker
+- Date: 2026-02-27
+- Context: Baseline vector retrieval may return partially relevant chunks, reducing answer precision on multi-topic corpora.
+- Decision: Add an optional reranker path that fetches a larger candidate set and reranks by query-document cosine similarity using embedding vectors.
+- Tradeoff: Better relevance potential without extra external service, but each chat call may incur more embedding latency and cost.
+- Revisit trigger: If eval shows limited quality gains or latency regression beyond acceptable threshold.
+
 ## Template
 - Date:
 - Context:

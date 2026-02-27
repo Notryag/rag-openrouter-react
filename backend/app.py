@@ -36,6 +36,9 @@ OPENROUTER_EMBEDDING_MODEL = os.getenv(
     "openai/text-embedding-3-small",
 )
 
+OPENROUTER_RERANK_ENABLED = os.getenv("OPENROUTER_RERANK_ENABLED", "false").lower() in {"1", "true", "yes", "on"}
+OPENROUTER_RERANK_FETCH_K = int(os.getenv("OPENROUTER_RERANK_FETCH_K", "8"))
+
 APP_NAME = os.getenv("OPENROUTER_APP_NAME")
 APP_URL = os.getenv("OPENROUTER_APP_URL")
 JWT_SECRET = os.getenv("JWT_SECRET", "change-me-in-production")
@@ -66,6 +69,8 @@ rag_service = RagService(
     embedding_model=OPENROUTER_EMBEDDING_MODEL,
     app_name=APP_NAME,
     app_url=APP_URL,
+    rerank_enabled=OPENROUTER_RERANK_ENABLED,
+    rerank_fetch_k=OPENROUTER_RERANK_FETCH_K,
 )
 ingest_job_service = IngestJobService(rag_service=rag_service, logger=logger)
 
