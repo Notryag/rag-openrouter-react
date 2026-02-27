@@ -23,6 +23,13 @@ Keep entries short. One entry per focused work block.
 - Risk: Live score baseline still depends on running backend with valid API key and ingested index.
 - Next: Run full eval and fill baseline metrics in `docs/EVAL.md`.
 
+## 2026-02-27 (Tracing + Request IDs)
+- Goal: Deliver P1 backlog item for request tracing and IDs.
+- Change: Added FastAPI middleware for request ID generation/propagation, latency/status logs, and response `X-Request-ID` header.
+- Result: Backend import/compile passed and middleware smoke test confirmed auto + custom request ID behavior.
+- Risk: Current tracing is log-based only; no distributed trace backend yet.
+- Next: Add CI checks and baseline API smoke tests in pipeline.
+
 ## Template
 - Goal:
 - Change:

@@ -30,6 +30,13 @@ Track architecture decisions so future changes are deliberate.
 - Tradeoff: Lightweight and transparent, but keyword-based correctness is coarse and can miss semantic equivalence.
 - Revisit trigger: Need model-graded evaluation or larger benchmark coverage.
 
+## ADR-005 Request-ID Middleware for API Tracing
+- Date: 2026-02-27
+- Context: Need to debug API failures and correlate backend logs with client-side errors.
+- Decision: Add FastAPI middleware that emits request completion/failure logs and propagates `X-Request-ID`.
+- Tradeoff: Low implementation cost, but still lacks distributed tracing storage/search.
+- Revisit trigger: Multi-service architecture or on-call need for cross-service trace views.
+
 ## Template
 - Date:
 - Context:

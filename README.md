@@ -22,6 +22,7 @@ OPENROUTER_APP_NAME=rag-demo
 OPENROUTER_APP_URL=http://localhost
 JWT_SECRET=replace-with-a-long-random-secret
 ACCESS_TOKEN_EXPIRE_MINUTES=720
+LOG_LEVEL=INFO
 ```
 
 2) Install deps and run:
@@ -59,6 +60,11 @@ cd backend
 - `GET /sessions/{session_id}/messages` list session history
 
 The frontend stores the bearer token in local storage and automatically sends it for session APIs.
+
+## Request tracing
+- Backend middleware logs each request with method, path, status code, and latency.
+- Each response includes `X-Request-ID`.
+- You can also pass your own `X-Request-ID` header; backend will propagate it.
 
 ## Frontend setup
 ```
