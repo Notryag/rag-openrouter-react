@@ -72,6 +72,13 @@ Keep entries short. One entry per focused work block.
 - Risk: Embedding-based rerank adds extra embedding calls, so latency/cost may increase until measured on live eval.
 - Next: Run full eval baseline with rerank on/off and decide default setting.
 
+## 2026-03-04 (CI Checks + Smoke Test)
+- Goal: Deliver backlog task "Add CI checks" with explicit smoke coverage.
+- Change: Added `backend/scripts/smoke_test.py` (auth/session API smoke flow) and wired it into `.github/workflows/ci.yml`; compile checks now include smoke script.
+- Result: `python scripts/check_architecture.py` passed; `python backend/scripts/run_eval.py --dry-run` passed; compile checks for backend scripts passed.
+- Risk: Local smoke run was blocked in current shell because global Python lacks `fastapi` and project venv is Windows-only path from WSL; CI environment should execute it after dependency install.
+- Next: If needed, add a Linux-compatible local backend venv bootstrap command to reduce environment drift.
+
 ## Template
 - Goal:
 - Change:

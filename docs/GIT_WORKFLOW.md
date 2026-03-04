@@ -12,6 +12,8 @@
 
 ```bash
 git status
+python scripts/check_architecture.py
+python backend/scripts/smoke_test.py
 git add -p
 git commit -m "feat(backend): add request id middleware"
 git log --oneline --decorate -20
@@ -40,6 +42,7 @@ Types:
 - Code updated
 - Basic run/build check passed
 - `python scripts/check_architecture.py` passed
+- CI baseline checks included for touched scope (at least frontend lint/build and backend smoke test when backend API changes)
 - `docs/WORKLOG.md` updated
 - `docs/BACKLOG.md` status updated
 - `docs/DECISIONS.md` updated when architecture direction changes

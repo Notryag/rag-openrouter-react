@@ -38,6 +38,7 @@ This file defines the default coding architecture for this repository.
 
 ## CI Gate
 - Run `python scripts/check_architecture.py`.
+- Backend API changes should include a smoke path in CI (`python backend/scripts/smoke_test.py`).
 - Any violation fails CI and should be fixed before merging.
 
 ## Refactor Policy

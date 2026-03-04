@@ -37,9 +37,13 @@ jobs:
         run: |
           python -m py_compile backend/app.py
           python -m py_compile backend/scripts/run_eval.py
+          python -m py_compile backend/scripts/smoke_test.py
 
       - name: Eval dataset dry-run
         run: python backend/scripts/run_eval.py --dry-run
+
+      - name: Backend smoke test
+        run: python backend/scripts/smoke_test.py
 
       - name: Install frontend deps
         working-directory: frontend

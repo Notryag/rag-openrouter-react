@@ -14,7 +14,7 @@ Rule: keep at most 3 tasks in `doing`.
 | Refactor backend monolith (phase 2: services extraction) | P1 | done | Codex | move auth/rag/ingest/session logic to services |
 | Refactor backend monolith (phase 3: routers split) | P1 | done | Codex | split routes from app.py into routers modules |
 | Add reranker support | P2 | done | Codex | embedding-based rerank with env toggle |
-| Add CI checks | P2 | todo | | lint + smoke test |
+| Add CI checks | P2 | done | Codex | frontend lint/build + backend smoke test in CI |
 
 Status values:
 - `todo`
