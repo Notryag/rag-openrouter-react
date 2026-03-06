@@ -89,7 +89,7 @@ ensure_backend_env() {
 
   if [[ -f "$BACKEND_ENV_EXAMPLE" ]]; then
     cp "$BACKEND_ENV_EXAMPLE" "$BACKEND_ENV_FILE"
-    fail "Created backend/.env from .env.example. Fill OPENROUTER_API_KEY and rerun."
+    fail "Created backend/.env from .env.example. Fill AI_API_KEY and rerun."
   fi
 
   fail "backend/.env is missing."

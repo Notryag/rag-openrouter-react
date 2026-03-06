@@ -26,7 +26,7 @@ function Ensure-BackendEnv {
 
     if (Test-Path $BackendEnvExample) {
         Copy-Item $BackendEnvExample $BackendEnvFile
-        throw "Created backend\.env from .env.example. Fill OPENROUTER_API_KEY and rerun."
+        throw "Created backend\.env from .env.example. Fill AI_API_KEY and rerun."
     }
 
     throw "backend\.env is missing."

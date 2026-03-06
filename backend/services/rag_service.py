@@ -49,6 +49,8 @@ class RagService:
         )
 
     def _default_headers(self):
+        if "openrouter.ai" not in self.base_url:
+            return None
         headers = {}
         if self.app_name:
             headers["X-Title"] = self.app_name
@@ -58,7 +60,7 @@ class RagService:
 
     def _require_api_key(self):
         if not self.api_key:
-            raise RuntimeError("OPENROUTER_API_KEY is not set")
+            raise RuntimeError("API key is not set. Configure AI_API_KEY or the active provider key.")
 
     def get_embeddings(self):
         if self._embeddings is None:
@@ -68,6 +70,9 @@ class RagService:
                 base_url=self.base_url,
                 model=self.embedding_model,
                 default_headers=self._default_headers(),
+                # OpenAI-compatible embedding endpoints should receive raw text;
+                # local token counting can trigger unsupported tokenizer lookups.
+                check_embedding_ctx_length=False,
             )
         return self._embeddings
 

@@ -1,5 +1,4 @@
 import logging
-import os
 import time
 import uuid
 from pathlib import Path
@@ -10,6 +9,7 @@ from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+from core.settings import AppSettings
 from repositories.db import init_db
 from routers import (
     create_auth_router,
@@ -27,50 +27,33 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
 CHROMA_DIR = BASE_DIR / "chroma_db"
-
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
-OPENROUTER_BASE_URL = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
-OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "openai/gpt-4o-mini")
-OPENROUTER_EMBEDDING_MODEL = os.getenv(
-    "OPENROUTER_EMBEDDING_MODEL",
-    "openai/text-embedding-3-small",
-)
-
-OPENROUTER_RERANK_ENABLED = os.getenv("OPENROUTER_RERANK_ENABLED", "false").lower() in {"1", "true", "yes", "on"}
-OPENROUTER_RERANK_FETCH_K = int(os.getenv("OPENROUTER_RERANK_FETCH_K", "8"))
-
-APP_NAME = os.getenv("OPENROUTER_APP_NAME")
-APP_URL = os.getenv("OPENROUTER_APP_URL")
-JWT_SECRET = os.getenv("JWT_SECRET", "change-me-in-production")
-JWT_ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "720"))
-LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+settings = AppSettings.from_env()
 
 bearer_scheme = HTTPBearer(auto_error=False)
 logger = logging.getLogger("rag_api")
 logging.basicConfig(
-    level=getattr(logging, LOG_LEVEL, logging.INFO),
+    level=getattr(logging, settings.log_level, logging.INFO),
     format="%(asctime)s %(levelname)s %(name)s %(message)s",
 )
 
 
 auth_service = AuthService(
-    jwt_secret=JWT_SECRET,
-    jwt_algorithm=JWT_ALGORITHM,
-    access_token_expire_minutes=ACCESS_TOKEN_EXPIRE_MINUTES,
+    jwt_secret=settings.jwt_secret,
+    jwt_algorithm=settings.jwt_algorithm,
+    access_token_expire_minutes=settings.access_token_expire_minutes,
 )
 session_service = SessionService()
 rag_service = RagService(
     data_dir=DATA_DIR,
     chroma_dir=CHROMA_DIR,
-    api_key=OPENROUTER_API_KEY,
-    base_url=OPENROUTER_BASE_URL,
-    model=OPENROUTER_MODEL,
-    embedding_model=OPENROUTER_EMBEDDING_MODEL,
-    app_name=APP_NAME,
-    app_url=APP_URL,
-    rerank_enabled=OPENROUTER_RERANK_ENABLED,
-    rerank_fetch_k=OPENROUTER_RERANK_FETCH_K,
+    api_key=settings.api_key,
+    base_url=settings.base_url,
+    model=settings.model,
+    embedding_model=settings.embedding_model,
+    app_name=settings.app_name,
+    app_url=settings.app_url,
+    rerank_enabled=settings.rerank_enabled,
+    rerank_fetch_k=settings.rerank_fetch_k,
 )
 ingest_job_service = IngestJobService(rag_service=rag_service, logger=logger)
 
