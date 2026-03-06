@@ -5,7 +5,6 @@ PyJWT
 langchain
 langchain-openai
 langchain-community
-langchain-classic
 langchain-text-splitters
 chromadb
 pypdf

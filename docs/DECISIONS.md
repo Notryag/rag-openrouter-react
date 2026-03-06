@@ -72,6 +72,13 @@ Track architecture decisions so future changes are deliberate.
 - Tradeoff: Better relevance potential without extra external service, but each chat call may incur more embedding latency and cost.
 - Revisit trigger: If eval shows limited quality gains or latency regression beyond acceptable threshold.
 
+## ADR-011 Functional Agent RAG Baseline
+- Date: 2026-03-04
+- Context: Existing RAG answer flow still relied on legacy chain composition, which made middleware-driven prompt/context control inconsistent.
+- Decision: Standardize backend RAG answer path on Functional Agent architecture using `create_agent`, with retrieval/memory/context injection implemented in `@dynamic_prompt` middleware.
+- Tradeoff: Cleaner modern agent flow and easier middleware control, but requires explicit request-context plumbing and agent output parsing discipline.
+- Revisit trigger: If a future LangChain release deprecates current agent middleware APIs or introduces a better stable graph-native replacement.
+
 ## Template
 - Date:
 - Context:

@@ -15,6 +15,7 @@ Rule: keep at most 3 tasks in `doing`.
 | Refactor backend monolith (phase 3: routers split) | P1 | done | Codex | split routes from app.py into routers modules |
 | Add reranker support | P2 | done | Codex | embedding-based rerank with env toggle |
 | Add CI checks | P2 | done | Codex | frontend lint/build + backend smoke test in CI |
+| Refactor RAG service to singleton Functional Agent middleware flow | P1 | doing | Codex | one `create_agent` instance + `@dynamic_prompt` retrieval/context |
 
 Status values:
 - `todo`

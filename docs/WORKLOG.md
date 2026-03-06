@@ -79,6 +79,20 @@ Keep entries short. One entry per focused work block.
 - Risk: Local smoke run was blocked in current shell because global Python lacks `fastapi` and project venv is Windows-only path from WSL; CI environment should execute it after dependency install.
 - Next: If needed, add a Linux-compatible local backend venv bootstrap command to reduce environment drift.
 
+## 2026-03-04 (Functional Agent Migration Plan)
+- Goal: Migrate RAG answer path to Functional Agent baseline with explicit middleware context control.
+- Change: Updated architecture and decision docs to require `create_agent` + `@dynamic_prompt` and forbid legacy `langchain.chains` patterns.
+- Result: Backlog item set to `doing`; implementation steps are now documented before code changes.
+- Risk: Runtime behavior can drift if agent output schema differs across LangChain versions.
+- Next: Refactor `backend/services/rag_service.py` to singleton agent reuse and move all request context injection to invoke-time context.
+
+## 2026-03-04 (Functional Agent Singleton Refactor)
+- Goal: Implement singleton Functional Agent runtime while keeping retrieval/memory/context in middleware.
+- Change: Added `backend/services/functional_agent_runner.py` for lazy singleton `create_agent` reuse; retrieval and prompt context injection now run in `@dynamic_prompt`; `RagService` delegates answer orchestration to this runner.
+- Result: Architecture check passed; python compile checks passed; no legacy chain API references remain in `backend/`.
+- Risk: Needs runtime verification against installed LangChain version in backend venv to confirm exact agent output shape.
+- Next: Run backend `/chat` smoke in activated venv and then mark backlog task `done`.
+
 ## Template
 - Goal:
 - Change:

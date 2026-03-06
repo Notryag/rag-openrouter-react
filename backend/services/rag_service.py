@@ -2,14 +2,13 @@ import shutil
 import threading
 from pathlib import Path
 
-from langchain_classic.chains.combine_documents import create_stuff_documents_chain
-from langchain_classic.chains.retrieval import create_retrieval_chain
-from langchain_core.prompts import ChatPromptTemplate
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
 from langchain_community.vectorstores import Chroma
+from langchain_core.documents import Document
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
+from services.functional_agent_runner import FunctionalAgentRunner
 from services.rerank_service import EmbeddingRerankService
 
 
@@ -42,6 +41,12 @@ class RagService:
         self._llm = None
         self._vectorstore = None
         self._ingest_lock = threading.Lock()
+        self._agent_runner = FunctionalAgentRunner(
+            llm_factory=self.get_llm,
+            retrieve_documents=self._retrieve_documents,
+            format_memory=self._format_memory,
+            format_context=self._format_retrieved_context,
+        )
 
     def _default_headers(self):
         headers = {}
@@ -128,6 +133,47 @@ class RagService:
                 sources.append(entry)
         return sources
 
+    @staticmethod
+    def _format_memory(memory: list[dict[str, str]]) -> str:
+        if not memory:
+            return "No conversation memory."
+        lines = []
+        for idx, turn in enumerate(memory[-5:], start=1):
+            question = str(turn.get("question", "")).strip()
+            answer = str(turn.get("answer", "")).strip()
+            if question:
+                lines.append(f"{idx}. User: {question}")
+            if answer:
+                lines.append(f"   Assistant: {answer}")
+        return "\n".join(lines) if lines else "No conversation memory."
+
+    @staticmethod
+    def _format_retrieved_context(docs: list[Document]) -> str:
+        if not docs:
+            return "No retrieved context."
+        blocks = []
+        for idx, doc in enumerate(docs, start=1):
+            source = str(doc.metadata.get("source", "unknown"))
+            page = doc.metadata.get("page")
+            header = f"[{idx}] source={source}"
+            if page is not None:
+                header += f" page={page}"
+            text = (doc.page_content or "").strip().replace("\n", " ")
+            if len(text) > 650:
+                text = f"{text[:650]}..."
+            blocks.append(f"{header}\n{text}")
+        return "\n\n".join(blocks)
+
+    def _retrieve_documents(self, question: str, k: int) -> list[Document]:
+        top_k = max(int(k), 1)
+        vectorstore = self.get_vectorstore()
+        fetch_k = max(top_k, self.rerank_fetch_k) if self.rerank_enabled else top_k
+        docs = vectorstore.similarity_search(question, k=fetch_k)
+        if self.rerank_enabled and docs:
+            reranker = EmbeddingRerankService(self.get_embeddings)
+            docs = reranker.rerank(question=question, docs=docs, top_k=top_k)
+        return docs[:top_k]
+
     def run_ingest(self, reset: bool):
         with self._ingest_lock:
             files = self.collect_files()
@@ -147,39 +193,8 @@ class RagService:
                 collection_name="rag",
             )
             self._vectorstore = vectorstore
-            return {
-                "files": len(files),
-                "chunks": len(chunks),
-                "failed": failed,
-            }
-
-    def _build_prompt(self):
-        system = (
-            "You are a helpful assistant. Answer using only the provided context. "
-            "If the answer is not in the context, say you don't know."
-        )
-        return ChatPromptTemplate.from_messages(
-            [("system", system), ("human", "Question: {input}\n\nContext:\n{context}")]
-        )
-
-    def _answer_with_rerank(self, question: str, k: int):
-        vectorstore = self.get_vectorstore()
-        docs = vectorstore.similarity_search(question, k=max(k, self.rerank_fetch_k))
-        reranker = EmbeddingRerankService(self.get_embeddings)
-        top_docs = reranker.rerank(question=question, docs=docs, top_k=k)
-        llm_chain = create_stuff_documents_chain(self.get_llm(), self._build_prompt())
-        answer = llm_chain.invoke({"input": question, "context": top_docs})
-        return answer, self.build_sources(top_docs)
+            return {"files": len(files), "chunks": len(chunks), "failed": failed}
 
     def answer_question(self, question: str, k: int):
-        if self.rerank_enabled:
-            return self._answer_with_rerank(question=question, k=k)
-
-        vectorstore = self.get_vectorstore()
-        retriever = vectorstore.as_retriever(search_kwargs={"k": k})
-        combine_docs_chain = create_stuff_documents_chain(self.get_llm(), self._build_prompt())
-        retrieval_chain = create_retrieval_chain(retriever, combine_docs_chain)
-        result = retrieval_chain.invoke({"input": question})
-        docs = result.get("context", [])
-        answer = result.get("answer", "")
+        answer, docs = self._agent_runner.answer(question=question, k=max(int(k), 1), memory=[])
         return answer, self.build_sources(docs)

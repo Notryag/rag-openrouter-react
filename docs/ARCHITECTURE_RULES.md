@@ -19,6 +19,12 @@ This file defines the default coding architecture for this repository.
 - New business logic should not be added to `backend/app.py`.
 - New `.py` source files should be placed under the layer folders above (or `backend/scripts/` for tooling scripts).
 
+## RAG Agent Rules
+- RAG answer path must use Functional Agent mode based on `create_agent`.
+- Retrieval, memory formatting, and context injection must be implemented in `@dynamic_prompt` middleware.
+- Do not use legacy `langchain.chains` APIs in backend code (for example `RetrievalQA`, `create_retrieval_chain`, `create_stuff_documents_chain`).
+- Agent instance should be created once per service lifecycle and reused across requests; request-specific data must flow via invoke-time context/state.
+
 ## Frontend Rules
 - Target layout:
   - `frontend/src/components/` UI components

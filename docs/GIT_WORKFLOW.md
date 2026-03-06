@@ -43,6 +43,7 @@ Types:
 - Basic run/build check passed
 - `python scripts/check_architecture.py` passed
 - CI baseline checks included for touched scope (at least frontend lint/build and backend smoke test when backend API changes)
+- If changing RAG orchestration, verify no legacy chain API remains (`rg -n "langchain_classic|create_retrieval_chain|create_stuff_documents_chain|RetrievalQA" backend`)
 - `docs/WORKLOG.md` updated
 - `docs/BACKLOG.md` status updated
 - `docs/DECISIONS.md` updated when architecture direction changes
