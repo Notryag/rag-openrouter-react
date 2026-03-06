@@ -12,7 +12,7 @@ function AuthCard({ authForm, authUser, onChange, onLogin, onLogout, onRegister 
 
   return (
     <section className="sidebarCard">
-      <p className="cardEyebrow">Account</p>
+      <p className="cardEyebrow">Account1</p>
       <h2>Sign in to keep sessions</h2>
       <div className="fieldStack">
         <input
@@ -30,7 +30,7 @@ function AuthCard({ authForm, authUser, onChange, onLogin, onLogout, onRegister 
         />
       </div>
       <div className="buttonRow">
-        <button className="button ghost" onClick={onRegister}>Register</button>
+        <button className="button ghost" onClick={onRegister}>Registe111r</button>
         <button className="button secondary" onClick={onLogin}>Sign in</button>
       </div>
     </section>

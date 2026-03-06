@@ -1,9 +1,49 @@
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 const TOKEN_KEY = "rag_access_token";
 
+const FIELD_LABELS = {
+  username: "Username",
+  password: "Password",
+};
+
 function getAuthHeaders() {
   const token = localStorage.getItem(TOKEN_KEY);
   return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+function formatValidationError(item) {
+  const field = item?.loc?.[item.loc.length - 1];
+  const fieldLabel = FIELD_LABELS[field] || "Field";
+
+  if (item?.type === "string_too_short" && item?.ctx?.min_length) {
+    return `${fieldLabel} must be at least ${item.ctx.min_length} characters.`;
+  }
+
+  if (item?.type === "string_too_long" && item?.ctx?.max_length) {
+    return `${fieldLabel} must be at most ${item.ctx.max_length} characters.`;
+  }
+
+  return item?.msg || "Invalid input.";
+}
+
+function formatErrorDetail(detail, fallback = "Request failed") {
+  if (typeof detail === "string" && detail.trim()) {
+    return detail;
+  }
+
+  if (Array.isArray(detail) && detail.length > 0) {
+    return detail.map(formatValidationError).join(" ");
+  }
+
+  if (detail && typeof detail === "object") {
+    try {
+      return JSON.stringify(detail);
+    } catch {
+      return fallback;
+    }
+  }
+
+  return fallback;
 }
 
 async function handleResponse(res) {
@@ -11,11 +51,11 @@ async function handleResponse(res) {
     let detail = "Request failed";
     try {
       const data = await res.json();
-      detail = data.detail || JSON.stringify(data);
+      detail = formatErrorDetail(data.detail ?? data, "Request failed");
     } catch {
-      detail = await res.text();
+      detail = formatErrorDetail(await res.text(), "Request failed");
     }
-    throw new Error(detail);
+    throw new Error(formatErrorDetail(detail, "Request failed"));
   }
   return res.json();
 }

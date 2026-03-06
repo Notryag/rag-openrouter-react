@@ -80,6 +80,24 @@ npm run dev
 
 Open `http://localhost:5173`.
 
+## One-click dev startup
+From the repo root:
+
+```bash
+bash scripts/start_dev.sh
+```
+
+On Windows PowerShell:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\start_dev.ps1
+```
+
+Notes:
+- If `backend/.env` does not exist, the script copies `backend/.env.example` and stops so you can fill `OPENROUTER_API_KEY`.
+- If `backend/.venv` or `frontend/node_modules` is missing, the script bootstraps them automatically.
+- Default ports are `8000` for backend and `5173` for frontend. In bash you can override them with `BACKEND_PORT=8001 FRONTEND_PORT=5174 bash scripts/start_dev.sh`.
+
 ## Architecture guardrails
 - Human-readable rules: `docs/ARCHITECTURE_RULES.md`
 - Machine gate: `python scripts/check_architecture.py`
