@@ -1,9 +1,9 @@
-﻿# RAG with OpenRouter (React + FastAPI)
+﻿# RAG with Configurable OpenAI-Compatible Providers (React + FastAPI)
 
 This project provides a small end-to-end RAG setup:
 - FastAPI + LangChain backend with persistent Chroma index
 - React frontend for ingesting and chatting
-- OpenRouter (OpenAI-compatible) API
+- Configurable OpenAI-compatible AI provider support
 
 ## Prerequisites
 - Python 3.10+
@@ -30,17 +30,20 @@ bash scripts/migrate_to_wsl.sh
 1) Create `backend/.env`:
 
 ```
-OPENROUTER_API_KEY=your_key
-OPENROUTER_MODEL=openai/gpt-4o-mini
-OPENROUTER_EMBEDDING_MODEL=openai/text-embedding-3-small
-OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
-# Optional for OpenRouter analytics
-OPENROUTER_APP_NAME=rag-demo
-OPENROUTER_APP_URL=http://localhost
+AI_PROVIDER=dashscope
+AI_API_KEY=your_dashscope_api_key
+AI_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+AI_MODEL=qwen-plus
+AI_EMBEDDING_MODEL=text-embedding-v4
+AI_APP_NAME=rag-demo
+AI_APP_URL=http://localhost
 JWT_SECRET=replace-with-a-long-random-secret
 ACCESS_TOKEN_EXPIRE_MINUTES=720
 LOG_LEVEL=INFO
 ```
+
+Preferred variables are `AI_PROVIDER`, `AI_API_KEY`, `AI_BASE_URL`, `AI_MODEL`, and `AI_EMBEDDING_MODEL`.
+Provider-specific fallbacks still work for `DASHSCOPE_*`, `GEMINI_*`, and `OPENROUTER_*`.
 
 2) Install deps and run:
 
@@ -105,7 +108,7 @@ bash scripts/start_dev.sh
 ```
 
 Notes:
-- If `backend/.env` does not exist, the script copies `backend/.env.example` and stops so you can fill `OPENROUTER_API_KEY`.
+- If `backend/.env` does not exist, the script copies `backend/.env.example` and stops so you can fill `AI_API_KEY`.
 - If `backend/.venv` or `frontend/node_modules` is missing, the script bootstraps them automatically.
 - Default ports are `8000` for backend and `5173` for frontend. In bash you can override them with `BACKEND_PORT=8001 FRONTEND_PORT=5174 bash scripts/start_dev.sh`.
 - If you run from `/mnt/...`, the script warns because frontend hot reload may be unreliable there.

@@ -14,7 +14,7 @@
 {"id":"priya_action_item","question":"What action item was assigned to Priya and by what date?","expected_keywords":["2026-02-24","api limit"],"expected_sources":["meeting_notes.md"]}
 {"id":"queue_depth_risk","question":"What risk is mentioned for month-end reporting traffic?","expected_keywords":["queue depth"],"expected_sources":["meeting_notes.md"]}
 {"id":"vector_index_not_found_fix","question":"How to fix the error: Vector index not found. Run ingest first.","expected_keywords":["post /ingest","retry"],"expected_sources":["troubleshooting_guide.txt"]}
-{"id":"missing_api_key_fix","question":"What should be set when ingest fails with OPENROUTER_API_KEY is not set?","expected_keywords":["openrouter_api_key","openrouter_model"],"expected_sources":["troubleshooting_guide.txt"]}
+{"id":"missing_api_key_fix","question":"What should be set when ingest fails because the API key is not configured?","expected_keywords":["ai_provider","ai_api_key","ai_model"],"expected_sources":["troubleshooting_guide.txt"]}
 {"id":"frontend_network_error_fix","question":"What should be checked if frontend shows network error when calling backend?","expected_keywords":["localhost:8000","vite_api_base","cors"],"expected_sources":["troubleshooting_guide.txt"]}
 {"id":"weak_retrieval_fix","question":"What can be changed when answers have no relevant sources?","expected_keywords":["increase","k","6"],"expected_sources":["troubleshooting_guide.txt"]}
 {"id":"unknown_region","question":"Which cloud region is Acme hosted in by default?","expected_keywords":["don't know"],"expected_sources":[]}

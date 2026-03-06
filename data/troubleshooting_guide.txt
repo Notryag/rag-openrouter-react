@@ -6,10 +6,10 @@ Fix:
 2) Call POST /ingest with {"reset": true}.
 3) Retry POST /chat.
 
-Issue: Ingest fails with "OPENROUTER_API_KEY is not set"
+Issue: Ingest fails with "API key is not set. Configure AI_API_KEY or the active provider key."
 Fix:
 1) Create backend/.env.
-2) Set OPENROUTER_API_KEY and OPENROUTER_MODEL.
+2) Set AI_PROVIDER, AI_API_KEY, and AI_MODEL.
 3) Restart the backend process.
 
 Issue: Frontend shows network error when calling backend

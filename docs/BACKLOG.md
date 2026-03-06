@@ -16,6 +16,7 @@ Rule: keep at most 3 tasks in `doing`.
 | Add reranker support | P2 | done | Codex | embedding-based rerank with env toggle |
 | Add CI checks | P2 | done | Codex | frontend lint/build + backend smoke test in CI |
 | Refactor RAG service to singleton Functional Agent middleware flow | P1 | done | Codex | singleton `create_agent` + `@dynamic_prompt` retrieval/context + session memory via invoke context |
+| Run live RAG eval baseline and fill metrics | P1 | doing | Codex | real `/chat` eval for current Functional Agent path |
 
 Status values:
 - `todo`
