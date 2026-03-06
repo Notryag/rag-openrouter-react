@@ -16,6 +16,9 @@ function Write-Log($Message) {
     Write-Host "[start_dev] $Message"
 }
 
+Write-Log "PowerShell startup is a fallback path."
+Write-Log "Preferred workflow: move the repo into a WSL-native path and run bash scripts/start_dev.sh from WSL."
+
 function Ensure-BackendEnv {
     if (Test-Path $BackendEnvFile) {
         return

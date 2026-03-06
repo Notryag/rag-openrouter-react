@@ -30,16 +30,21 @@ Do not put new fetch logic directly inside React page components when a frontend
 
 ## 3. Runbook
 
+Preferred environment:
+- Put the repo in a WSL-native path such as `~/workspace/rag-openrouter-react`
+- Run both backend and frontend from WSL
+- Avoid using a `/mnt/c/...` or `/mnt/d/...` checkout for active frontend development because Vite watch mode is unreliable there
+
 Preferred startup from repo root:
 
 ```bash
 bash scripts/start_dev.sh
 ```
 
-Windows PowerShell:
+If the repo currently lives under `/mnt/...`, migrate it first:
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\start_dev.ps1
+```bash
+bash scripts/migrate_to_wsl.sh
 ```
 
 Manual startup:
@@ -79,7 +84,9 @@ If local tooling is broken, state clearly whether the blocker is code-related or
 
 ## 5. Environment Notes
 
-This repo may be used from WSL and Windows together. Be explicit about which shell and toolchain you are using when diagnosing issues.
+This repo may be used from WSL and Windows together, but the recommended steady-state workflow is WSL-native only for development.
+
+If an issue appears only when the repo is under `/mnt/...`, treat that as an environment issue first, especially for frontend hot reload and `node_modules`.
 
 Prefer consistent package management in the frontend. If you change frontend dependencies, avoid leaving `package-lock.json` and `pnpm-lock.yaml` out of sync without explanation.
 

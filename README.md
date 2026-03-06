@@ -9,6 +9,23 @@ This project provides a small end-to-end RAG setup:
 - Python 3.10+
 - Node.js 18+
 
+## Recommended development environment
+
+Preferred workflow:
+- Keep the repository in a WSL-native path such as `~/workspace/rag-openrouter-react`
+- Run both backend and frontend inside WSL
+- Open the folder with VS Code Remote WSL
+
+Why:
+- Vite file watching and hot reload are much more reliable in WSL-native paths than under `/mnt/c/...` or `/mnt/d/...`
+- Mixing Windows-installed frontend dependencies with WSL-installed dependencies leads to unstable `node_modules`
+
+If your current checkout is under `/mnt/...`, migrate it first:
+
+```bash
+bash scripts/migrate_to_wsl.sh
+```
+
 ## Backend setup
 1) Create `backend/.env`:
 
@@ -87,16 +104,11 @@ From the repo root:
 bash scripts/start_dev.sh
 ```
 
-On Windows PowerShell:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\start_dev.ps1
-```
-
 Notes:
 - If `backend/.env` does not exist, the script copies `backend/.env.example` and stops so you can fill `OPENROUTER_API_KEY`.
 - If `backend/.venv` or `frontend/node_modules` is missing, the script bootstraps them automatically.
 - Default ports are `8000` for backend and `5173` for frontend. In bash you can override them with `BACKEND_PORT=8001 FRONTEND_PORT=5174 bash scripts/start_dev.sh`.
+- If you run from `/mnt/...`, the script warns because frontend hot reload may be unreliable there.
 
 ## Architecture guardrails
 - Human-readable rules: `docs/ARCHITECTURE_RULES.md`

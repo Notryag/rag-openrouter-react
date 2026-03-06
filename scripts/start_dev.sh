@@ -25,6 +25,15 @@ fail() {
   exit 1
 }
 
+warn_if_windows_mount() {
+  if [[ "$ROOT_DIR" == /mnt/* ]]; then
+    log "Warning: repository is running from $ROOT_DIR"
+    log "Vite hot reload is often unreliable on /mnt/... paths under WSL."
+    log "Recommended: move the repo into a WSL-native path such as ~/workspace/rag-openrouter-react"
+    log "Helper: bash scripts/migrate_to_wsl.sh"
+  fi
+}
+
 cleanup() {
   local exit_code=$?
 
@@ -148,6 +157,7 @@ main() {
   python_bin="$(find_python)"
   node_runner="$(find_node_runner)"
 
+  warn_if_windows_mount
   ensure_backend_env
   ensure_backend_venv "$python_bin"
   ensure_frontend_deps "$node_runner"
