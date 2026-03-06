@@ -3,11 +3,12 @@
 }
 
 :root {
-  --accent: #16a34a;
+  --accent: #0284c7;
   --panel-bg: rgb(243 248 255 / 75%);
   --panel-border: rgb(148 163 184 / 34%);
   --input-border: rgb(148 163 184 / 52%);
   --text-primary: #0f172a;
+  --text-dim: #64748b;
   --text-muted: #475569;
 }
 
