@@ -131,7 +131,7 @@ class FunctionalAgentRunner:
             runtime_question = str(self._runtime_context_value(request, "question", "")).strip()
             active_question = runtime_question or self._latest_user_message(request)
 
-            top_k = self._coerce_k(self._runtime_context_value(request, "k", 4), 4)
+            top_k = self._coerce_k(self._runtime_context_value(request, "k", 3), 3)
             raw_memory = self._runtime_context_value(request, "memory", [])
             active_memory = raw_memory if isinstance(raw_memory, list) else []
             request_id = str(self._runtime_context_value(request, "request_id", "")).strip()
@@ -175,7 +175,7 @@ class FunctionalAgentRunner:
     ) -> tuple[str, list[Document]]:
         safe_memory = memory or []
         active_request_id = (request_id or "").strip() or uuid.uuid4().hex
-        top_k = self._coerce_k(k, 4)
+        top_k = self._coerce_k(k, 3)
         self._set_request_docs(active_request_id, [])
         agent = self._get_agent()
         try:

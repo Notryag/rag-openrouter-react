@@ -107,6 +107,13 @@ Keep entries short. One entry per focused work block.
 - Risk: This is heuristic compression, so some long-answer nuance may be omitted until live eval confirms the tradeoff is acceptable.
 - Next: Continue the same backlog item by testing a lower default retrieval depth and measuring quality impact.
 
+## 2026-03-06 (Default Retrieval Depth k=3)
+- Goal: Complete the next live-eval tuning step by lowering default retrieval depth without degrading answer quality.
+- Change: Reduced the default `/chat` retrieval depth from `k=4` to `k=3` across backend request defaults, Functional Agent invoke-time fallback, frontend chat calls, and the eval runner default.
+- Result: Live eval against `localhost:8000` improved `answer_correctness` from `0.80` at `k=4` to `0.85` at `k=3`; `citation_precision` stayed `1.0`, and `p95_latency_ms` measured `2813.2` for the `k=3` run.
+- Risk: This corpus still shows run-to-run latency variance and intermittent timeout behavior, so the current gain should be treated as a strong local signal rather than a stable benchmark ceiling.
+- Next: Lower the per-document retrieved context cap from `650` chars to roughly `300-400` and rerun the live eval comparison.
+
 ## Template
 - Goal:
 - Change:

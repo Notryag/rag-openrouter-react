@@ -104,7 +104,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Run RAG evaluation cases against /chat.")
     parser.add_argument("--dataset", default=str(DEFAULT_DATASET), help="Path to JSONL eval dataset.")
     parser.add_argument("--api-base", default="http://localhost:8000", help="Backend API base URL.")
-    parser.add_argument("--k", type=int, default=4, help="Retriever top-k for /chat.")
+    parser.add_argument("--k", type=int, default=3, help="Retriever top-k for /chat.")
     parser.add_argument("--limit", type=int, default=0, help="Only run first N cases (0 means all).")
     parser.add_argument("--token", default="", help="Bearer token for authenticated calls.")
     parser.add_argument("--username", default="", help="Username for auto-login.")

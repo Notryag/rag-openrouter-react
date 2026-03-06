@@ -59,7 +59,7 @@ class IngestJobResponse(BaseModel):
 
 class ChatRequest(BaseModel):
     question: str
-    k: int = 4
+    k: int = 3
     session_id: Optional[int] = None
 
 

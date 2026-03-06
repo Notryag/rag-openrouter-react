@@ -20,7 +20,7 @@ Rule: keep at most 3 tasks in `doing`.
 
 Current notes for `Run live RAG eval baseline and fill metrics`:
 - Done 2026-03-06: Trim session memory so historical answers are summarized or truncated before being passed in full to the model.
-- Reduce default retrieval depth from `k=4` to `k=2` or `k=3` after validating quality impact.
+- Done 2026-03-06: Reduce default retrieval depth from `k=4` to `k=3` after live eval; `k=3` reached `0.85` answer correctness vs `0.80` for `k=4`, with citation precision unchanged at `1.0`.
 - Lower per-document retrieved context cap from `650` chars to roughly `300-400`.
 - Constrain answer length for summary-style questions, for example `at most 3 bullets and 1 sentence each`.
 - Skip retrieval entirely for greeting-style prompts such as `hi` and `hello`.

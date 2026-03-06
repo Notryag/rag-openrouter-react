@@ -152,7 +152,7 @@ export async function getIngestJob(jobId) {
   return handleResponse(res);
 }
 
-export async function chat(question, k = 4, sessionId = null) {
+export async function chat(question, k = 3, sessionId = null) {
   const res = await fetch(`${API_BASE}/chat`, {
     method: "POST",
     headers: {

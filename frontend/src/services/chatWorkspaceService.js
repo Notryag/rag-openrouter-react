@@ -71,7 +71,7 @@ export async function createChatSession(title = "New chat") {
 }
 
 export async function sendChatMessage(question, sessionId) {
-  return chat(question, 4, sessionId);
+  return chat(question, 3, sessionId);
 }
 
 export async function runIngestJob(onProgress) {

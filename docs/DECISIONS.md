@@ -93,6 +93,13 @@ Track architecture decisions so future changes are deliberate.
 - Tradeoff: Cuts prompt size and makes memory cost predictable, but some answer detail is intentionally dropped from follow-up context.
 - Revisit trigger: If live eval shows follow-up answer quality regresses or if a structured memory format replaces prompt text snapshots.
 
+## ADR-014 Default Retriever Depth Set to 3
+- Date: 2026-03-06
+- Context: The active live-eval tuning task required lowering retrieved context size without hurting answer quality on the current Functional Agent baseline.
+- Decision: Change the default `/chat` retrieval depth from `k=4` to `k=3` across backend, frontend, and the eval runner baseline.
+- Tradeoff: Reduces retrieved context volume and improved local eval correctness on the current dataset, but narrower recall can miss evidence on broader corpora and the latency win is not guaranteed on every run.
+- Revisit trigger: If future evals on larger corpora show recall loss, or if reranking/context compression changes the optimal retrieval depth.
+
 ## Template
 - Date:
 - Context:
