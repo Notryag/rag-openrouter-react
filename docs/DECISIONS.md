@@ -86,6 +86,13 @@ Track architecture decisions so future changes are deliberate.
 - Tradeoff: Keeps the agent lifecycle stable and request handling explicit, but adds context-plumbing requirements between router, session service, and RAG service.
 - Revisit trigger: If future agent/tool orchestration needs richer structured state than prompt-only middleware can safely manage.
 
+## ADR-013 Compact Session Memory Before Prompt Injection
+- Date: 2026-03-06
+- Context: Follow-up chats were passing full historical answers back into the Functional Agent prompt, which wastes prompt budget and makes live eval tuning noisy.
+- Decision: Keep full chat history in persistence, but compact session memory snapshots before prompt injection by normalizing prior questions and reducing prior answers to a short bounded summary/truncation form.
+- Tradeoff: Cuts prompt size and makes memory cost predictable, but some answer detail is intentionally dropped from follow-up context.
+- Revisit trigger: If live eval shows follow-up answer quality regresses or if a structured memory format replaces prompt text snapshots.
+
 ## Template
 - Date:
 - Context:

@@ -18,6 +18,7 @@ if str(BACKEND_DIR) not in sys.path:
 
 import app as backend_app_module  # noqa: E402
 from repositories import db as db_repository  # noqa: E402
+from services.session_service import SessionService  # noqa: E402
 
 app = backend_app_module.app
 
@@ -89,6 +90,12 @@ def main() -> int:
 
             original_answer_question = backend_app_module.rag_service.answer_question
             chat_calls: list[dict[str, object]] = []
+            long_first_answer = (
+                "First sentence explains the primary smoke test result in detail. "
+                "Second sentence adds more context for session memory compaction. "
+                "Third sentence should never reach the follow-up memory payload because it is overflow detail. "
+                "Fourth sentence exists only to verify trimming."
+            )
 
             def fake_answer_question(
                 question: str,
@@ -104,6 +111,8 @@ def main() -> int:
                         "request_id": request_id,
                     }
                 )
+                if question == "First smoke question":
+                    return long_first_answer, [{"source": "smoke-test"}]
                 return "stubbed answer", [{"source": "smoke-test"}]
 
             backend_app_module.rag_service.answer_question = fake_answer_question
@@ -144,8 +153,13 @@ def main() -> int:
             first_turn = second_memory[0]
             if first_turn.get("question") != "First smoke question":
                 raise AssertionError("Follow-up memory question mismatch")
-            if first_turn.get("answer") != "stubbed answer":
-                raise AssertionError("Follow-up memory answer mismatch")
+            compact_answer = first_turn.get("answer", "")
+            if compact_answer == long_first_answer:
+                raise AssertionError("Expected follow-up memory answer to be compacted")
+            if "Third sentence" in compact_answer:
+                raise AssertionError("Expected follow-up memory answer to exclude overflow sentences")
+            if len(compact_answer) > SessionService.MEMORY_ANSWER_CHAR_LIMIT:
+                raise AssertionError("Compacted follow-up memory answer exceeded char limit")
             if not chat_calls[1]["request_id"]:
                 raise AssertionError("Expected request_id to be forwarded to rag service")
 

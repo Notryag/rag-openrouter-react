@@ -18,6 +18,13 @@ Rule: keep at most 3 tasks in `doing`.
 | Refactor RAG service to singleton Functional Agent middleware flow | P1 | done | Codex | singleton `create_agent` + `@dynamic_prompt` retrieval/context + session memory via invoke context |
 | Run live RAG eval baseline and fill metrics | P1 | doing | Codex | real `/chat` eval for current Functional Agent path |
 
+Current notes for `Run live RAG eval baseline and fill metrics`:
+- Done 2026-03-06: Trim session memory so historical answers are summarized or truncated before being passed in full to the model.
+- Reduce default retrieval depth from `k=4` to `k=2` or `k=3` after validating quality impact.
+- Lower per-document retrieved context cap from `650` chars to roughly `300-400`.
+- Constrain answer length for summary-style questions, for example `at most 3 bullets and 1 sentence each`.
+- Skip retrieval entirely for greeting-style prompts such as `hi` and `hello`.
+
 Status values:
 - `todo`
 - `doing`

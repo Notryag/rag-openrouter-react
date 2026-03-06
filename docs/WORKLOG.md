@@ -100,6 +100,13 @@ Keep entries short. One entry per focused work block.
 - Risk: Live answer quality and latency still need a real `/chat` run with valid OpenRouter credentials and an indexed corpus.
 - Next: Run live eval or a focused `/chat` smoke against the real model/backend and fill non-TBD metrics in `docs/EVAL.md`.
 
+## 2026-03-06 (Session Memory Compaction)
+- Goal: Complete the first tuning task under live RAG eval preparation by shrinking follow-up chat memory payloads.
+- Change: Added deterministic session-memory compaction in `backend/services/session_service.py` so prior questions are normalized and prior answers are reduced to at most two sentences within a fixed character cap before being passed back into the RAG prompt; updated backend smoke coverage to assert overflow answer text is not forwarded in full.
+- Result: Follow-up `/chat` requests now receive bounded memory instead of raw full answers, which reduces prompt bloat without changing stored session history.
+- Risk: This is heuristic compression, so some long-answer nuance may be omitted until live eval confirms the tradeoff is acceptable.
+- Next: Continue the same backlog item by testing a lower default retrieval depth and measuring quality impact.
+
 ## Template
 - Goal:
 - Change:
