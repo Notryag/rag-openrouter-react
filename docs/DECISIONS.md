@@ -79,6 +79,13 @@ Track architecture decisions so future changes are deliberate.
 - Tradeoff: Cleaner modern agent flow and easier middleware control, but requires explicit request-context plumbing and agent output parsing discipline.
 - Revisit trigger: If a future LangChain release deprecates current agent middleware APIs or introduces a better stable graph-native replacement.
 
+## ADR-012 Invoke-Time Session Context for Singleton RAG Agent
+- Date: 2026-03-06
+- Context: The singleton Functional Agent needed request-scoped retrieval inputs without rebuilding the agent per chat turn, and authenticated follow-up chats needed prior session memory in the same middleware path.
+- Decision: Load prior session turns in the chat router/service path and pass `question`, `k`, `memory`, and `request_id` through agent invoke-time context; `@dynamic_prompt` remains the single place that retrieves documents and formats prompt context.
+- Tradeoff: Keeps the agent lifecycle stable and request handling explicit, but adds context-plumbing requirements between router, session service, and RAG service.
+- Revisit trigger: If future agent/tool orchestration needs richer structured state than prompt-only middleware can safely manage.
+
 ## Template
 - Date:
 - Context:

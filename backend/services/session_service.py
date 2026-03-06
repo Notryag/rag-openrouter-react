@@ -26,6 +26,19 @@ class SessionService:
         return session_repository.list_messages_by_session(session_id)
 
     @staticmethod
+    def build_chat_memory(session_id: int, limit: int = 5) -> list[dict[str, str]]:
+        rows = session_repository.list_messages_by_session(session_id)
+        if limit > 0:
+            rows = rows[-limit:]
+        return [
+            {
+                "question": row["question"],
+                "answer": row["answer"],
+            }
+            for row in rows
+        ]
+
+    @staticmethod
     def get_session(session_id: int):
         return session_repository.get_session_by_id(session_id)
 

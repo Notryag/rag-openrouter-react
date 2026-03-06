@@ -195,6 +195,17 @@ class RagService:
             self._vectorstore = vectorstore
             return {"files": len(files), "chunks": len(chunks), "failed": failed}
 
-    def answer_question(self, question: str, k: int):
-        answer, docs = self._agent_runner.answer(question=question, k=max(int(k), 1), memory=[])
+    def answer_question(
+        self,
+        question: str,
+        k: int,
+        memory: list[dict[str, str]] | None = None,
+        request_id: str | None = None,
+    ):
+        answer, docs = self._agent_runner.answer(
+            question=question,
+            k=max(int(k), 1),
+            memory=memory or [],
+            request_id=request_id,
+        )
         return answer, self.build_sources(docs)

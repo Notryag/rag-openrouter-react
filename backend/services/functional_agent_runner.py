@@ -166,11 +166,17 @@ class FunctionalAgentRunner:
                     self._agent = self._build_agent()
         return self._agent
 
-    def answer(self, question: str, k: int, memory: list[dict[str, str]] | None = None) -> tuple[str, list[Document]]:
+    def answer(
+        self,
+        question: str,
+        k: int,
+        memory: list[dict[str, str]] | None = None,
+        request_id: str | None = None,
+    ) -> tuple[str, list[Document]]:
         safe_memory = memory or []
-        request_id = uuid.uuid4().hex
+        active_request_id = (request_id or "").strip() or uuid.uuid4().hex
         top_k = self._coerce_k(k, 4)
-        self._set_request_docs(request_id, [])
+        self._set_request_docs(active_request_id, [])
         agent = self._get_agent()
         try:
             result = agent.invoke(
@@ -179,12 +185,12 @@ class FunctionalAgentRunner:
                     "question": question,
                     "k": top_k,
                     "memory": safe_memory,
-                    "request_id": request_id,
+                    "request_id": active_request_id,
                 },
             )
         except Exception:
-            self._pop_request_docs(request_id)
+            self._pop_request_docs(active_request_id)
             raise
 
-        docs = self._pop_request_docs(request_id)
+        docs = self._pop_request_docs(active_request_id)
         return self._extract_answer_text(result), docs

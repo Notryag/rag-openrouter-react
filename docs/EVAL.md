@@ -20,6 +20,7 @@ Record metric snapshots after each meaningful RAG change.
 | 2026-02-27 | Backend split phase 1 (schemas + repositories) | TBD | TBD | TBD | Refactor-only change; quality metrics unchanged |
 | 2026-02-27 | Backend split phase 2 (services extraction) | TBD | TBD | TBD | Refactor-only change; quality metrics unchanged |
 | 2026-02-27 | Add optional embedding-based reranker | TBD | TBD | TBD | Added quality toggle; run live eval on/off for baseline decision |
+| 2026-03-06 | Functional Agent singleton + session memory invoke context | TBD | TBD | TBD | RAG path refactor completed; local smoke covers follow-up memory wiring, but live eval still needs real backend/model run |
 
 ## Template Row
 | YYYY-MM-DD | short change note | 0.00 | 0.00 | 0 | notes |

@@ -93,6 +93,13 @@ Keep entries short. One entry per focused work block.
 - Risk: Needs runtime verification against installed LangChain version in backend venv to confirm exact agent output shape.
 - Next: Run backend `/chat` smoke in activated venv and then mark backlog task `done`.
 
+## 2026-03-06 (Functional Agent Task Completion)
+- Goal: Finish the active backlog item for singleton Functional Agent request-context flow.
+- Change: Passed authenticated session memory and request IDs from `backend/routers/chat_router.py` into `RagService`/`FunctionalAgentRunner` invoke context; added `SessionService.build_chat_memory()` and extended `backend/scripts/smoke_test.py` to cover follow-up `/chat` memory wiring without external model calls.
+- Result: `python scripts/check_architecture.py` passed; `python backend/scripts/smoke_test.py` passed; no legacy chain API references remain in `backend/`.
+- Risk: Live answer quality and latency still need a real `/chat` run with valid OpenRouter credentials and an indexed corpus.
+- Next: Run live eval or a focused `/chat` smoke against the real model/backend and fill non-TBD metrics in `docs/EVAL.md`.
+
 ## Template
 - Goal:
 - Change:
