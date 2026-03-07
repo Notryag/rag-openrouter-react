@@ -1,7 +1,10 @@
+import logging
 import shutil
 import threading
+import time
 from pathlib import Path
 
+from chromadb.config import Settings as ChromaSettings
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
 from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
@@ -10,6 +13,8 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from services.functional_agent_runner import FunctionalAgentRunner
 from services.rerank_service import EmbeddingRerankService
+
+logger = logging.getLogger("rag_api.rag_service")
 
 
 class RagService:
@@ -21,6 +26,9 @@ class RagService:
         base_url: str,
         model: str,
         embedding_model: str,
+        ai_timeout_seconds: float = 20,
+        ai_max_retries: int = 1,
+        chroma_anonymized_telemetry: bool = False,
         app_name: str | None = None,
         app_url: str | None = None,
         rerank_enabled: bool = False,
@@ -32,6 +40,9 @@ class RagService:
         self.base_url = base_url
         self.model = model
         self.embedding_model = embedding_model
+        self.ai_timeout_seconds = max(float(ai_timeout_seconds), 1.0)
+        self.ai_max_retries = max(int(ai_max_retries), 0)
+        self.chroma_anonymized_telemetry = bool(chroma_anonymized_telemetry)
         self.app_name = app_name
         self.app_url = app_url
         self.rerank_enabled = rerank_enabled
@@ -46,6 +57,13 @@ class RagService:
             retrieve_documents=self._retrieve_documents,
             format_memory=self._format_memory,
             format_context=self._format_retrieved_context,
+        )
+
+    def _chroma_settings(self) -> ChromaSettings:
+        return ChromaSettings(
+            is_persistent=True,
+            persist_directory=str(self.chroma_dir),
+            anonymized_telemetry=self.chroma_anonymized_telemetry,
         )
 
     def _default_headers(self):
@@ -69,6 +87,8 @@ class RagService:
                 api_key=self.api_key,
                 base_url=self.base_url,
                 model=self.embedding_model,
+                timeout=self.ai_timeout_seconds,
+                max_retries=self.ai_max_retries,
                 default_headers=self._default_headers(),
                 # OpenAI-compatible embedding endpoints should receive raw text;
                 # local token counting can trigger unsupported tokenizer lookups.
@@ -84,6 +104,8 @@ class RagService:
                 base_url=self.base_url,
                 model=self.model,
                 temperature=0.2,
+                timeout=self.ai_timeout_seconds,
+                max_retries=self.ai_max_retries,
                 default_headers=self._default_headers(),
             )
         return self._llm
@@ -98,6 +120,7 @@ class RagService:
             self._vectorstore = Chroma(
                 collection_name="rag",
                 persist_directory=str(self.chroma_dir),
+                client_settings=self._chroma_settings(),
                 embedding_function=self.get_embeddings(),
             )
         return self._vectorstore
@@ -170,6 +193,7 @@ class RagService:
         return "\n\n".join(blocks)
 
     def _retrieve_documents(self, question: str, k: int) -> list[Document]:
+        started = time.perf_counter()
         top_k = max(int(k), 1)
         vectorstore = self.get_vectorstore()
         fetch_k = max(top_k, self.rerank_fetch_k) if self.rerank_enabled else top_k
@@ -177,7 +201,16 @@ class RagService:
         if self.rerank_enabled and docs:
             reranker = EmbeddingRerankService(self.get_embeddings)
             docs = reranker.rerank(question=question, docs=docs, top_k=top_k)
-        return docs[:top_k]
+        final_docs = docs[:top_k]
+        elapsed_ms = (time.perf_counter() - started) * 1000
+        logger.info(
+            "rag_retrieval_completed duration_ms=%.2f top_k=%s fetch_k=%s docs=%s",
+            elapsed_ms,
+            top_k,
+            fetch_k,
+            len(final_docs),
+        )
+        return final_docs
 
     def run_ingest(self, reset: bool):
         with self._ingest_lock:
@@ -196,6 +229,7 @@ class RagService:
                 embedding=self.get_embeddings(),
                 persist_directory=str(self.chroma_dir),
                 collection_name="rag",
+                client_settings=self._chroma_settings(),
             )
             self._vectorstore = vectorstore
             return {"files": len(files), "chunks": len(chunks), "failed": failed}
@@ -207,10 +241,20 @@ class RagService:
         memory: list[dict[str, str]] | None = None,
         request_id: str | None = None,
     ):
+        started = time.perf_counter()
         answer, docs = self._agent_runner.answer(
             question=question,
             k=max(int(k), 1),
             memory=memory or [],
             request_id=request_id,
+        )
+        elapsed_ms = (time.perf_counter() - started) * 1000
+        logger.info(
+            "rag_answer_completed request_id=%s duration_ms=%.2f k=%s docs=%s memory_turns=%s",
+            request_id or "-",
+            elapsed_ms,
+            max(int(k), 1),
+            len(docs),
+            len(memory or []),
         )
         return answer, self.build_sources(docs)

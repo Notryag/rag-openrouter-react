@@ -62,9 +62,7 @@ class SessionService:
         session_id: int,
         limit: int = MEMORY_TURN_LIMIT,
     ) -> list[dict[str, str]]:
-        rows = session_repository.list_messages_by_session(session_id)
-        if limit > 0:
-            rows = rows[-limit:]
+        rows = session_repository.list_messages_by_session(session_id, limit=limit)
         return [
             {
                 "question": cls._compact_memory_text(

@@ -96,6 +96,9 @@ class AppSettings:
     base_url: str
     model: str
     embedding_model: str
+    ai_timeout_seconds: float
+    ai_max_retries: int
+    chroma_anonymized_telemetry: bool
     app_name: str | None
     app_url: str | None
     rerank_enabled: bool
@@ -142,6 +145,24 @@ class AppSettings:
                 _env("AI_EMBEDDING_MODEL"),
                 _env(preset.embedding_env),
                 default=preset.default_embedding_model,
+            ),
+            ai_timeout_seconds=float(
+                _first_non_empty(
+                    _env("AI_TIMEOUT_SECONDS"),
+                    default="20",
+                )
+            ),
+            ai_max_retries=int(
+                _first_non_empty(
+                    _env("AI_MAX_RETRIES"),
+                    default="1",
+                )
+            ),
+            chroma_anonymized_telemetry=_is_truthy(
+                _first_non_empty(
+                    _env("CHROMA_ANONYMIZED_TELEMETRY"),
+                    default="false",
+                )
             ),
             app_name=_first_non_empty(
                 _env("AI_APP_NAME"),

@@ -253,11 +253,18 @@
 }
 
 .messageList {
+  min-height: 0;
   padding: 18px;
   overflow: auto;
   display: grid;
   gap: 14px;
   align-content: start;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.messageListEnd {
+  height: 1px;
 }
 
 .messageBubble {

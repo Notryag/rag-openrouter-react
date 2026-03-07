@@ -54,8 +54,24 @@ def save_message(session_id: int, question: str, answer: str):
         )
 
 
-def list_messages_by_session(session_id: int):
+def list_messages_by_session(session_id: int, limit: int | None = None):
     with get_db() as conn:
+        if limit is not None and limit > 0:
+            return conn.execute(
+                """
+                SELECT question, answer, created_at
+                FROM (
+                    SELECT question, answer, created_at, id
+                    FROM chat_messages
+                    WHERE session_id = ?
+                    ORDER BY id DESC
+                    LIMIT ?
+                ) recent_messages
+                ORDER BY id ASC
+                """,
+                (session_id, limit),
+            ).fetchall()
+
         return conn.execute(
             """
             SELECT question, answer, created_at

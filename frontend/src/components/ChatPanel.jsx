@@ -1,3 +1,5 @@
+import { usePinnedAutoScroll } from "../hooks/usePinnedAutoScroll.js";
+
 function SourceList({ sources }) {
   if (!sources.length) {
     return (
@@ -20,6 +22,11 @@ function SourceList({ sources }) {
 }
 
 function MessageThread({ conversation, loading, onPickPrompt, starterPrompts }) {
+  const scrollKey = `${loading ? "loading" : "idle"}:${conversation
+    .map((item) => `${item.id}:${item.pending ? "pending" : "ready"}`)
+    .join("|")}`;
+  const { containerRef, endRef, handleScroll } = usePinnedAutoScroll(scrollKey);
+
   if (!conversation.length) {
     return (
       <section className="threadEmpty">
@@ -38,7 +45,7 @@ function MessageThread({ conversation, loading, onPickPrompt, starterPrompts }) 
   }
 
   return (
-    <section className="messageList">
+    <section ref={containerRef} className="messageList" onScroll={handleScroll}>
       {conversation.map((item) => (
         <article key={item.id} className={`messageBubble ${item.role}`}>
           <div className="messageMeta">
@@ -51,6 +58,7 @@ function MessageThread({ conversation, loading, onPickPrompt, starterPrompts }) 
         </article>
       ))}
       {loading ? <div className="threadHint">Waiting for the model to finish the current reply...</div> : null}
+      <div ref={endRef} className="messageListEnd" aria-hidden="true" />
     </section>
   );
 }
