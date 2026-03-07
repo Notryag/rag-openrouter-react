@@ -30,13 +30,16 @@ function MessageThread({ conversation, loading, onPickPrompt, starterPrompts }) 
   if (!conversation.length) {
     return (
       <section className="threadEmpty">
-        <p className="threadEyebrow">Start here</p>
-        <h2>Turn the demo into a real chat flow</h2>
-        <p>Use multi-turn conversation, saved sessions, and document citations in one focused workspace.</p>
+        <div className="threadLead">
+          <p className="threadEyebrow">Issue 01 / Brief</p>
+          <h2>Ask against the indexed archive</h2>
+          <p>Start with a pointed question, then inspect the reply and the supporting citations in the same working surface.</p>
+        </div>
         <div className="promptGrid">
-          {starterPrompts.map((prompt) => (
+          {starterPrompts.map((prompt, index) => (
             <button key={prompt} className="promptCard" onClick={() => onPickPrompt(prompt)}>
-              {prompt}
+              <span className="promptIndex">Prompt {String(index + 1).padStart(2, "0")}</span>
+              <span className="promptText">{prompt}</span>
             </button>
           ))}
         </div>
@@ -49,8 +52,8 @@ function MessageThread({ conversation, loading, onPickPrompt, starterPrompts }) 
       {conversation.map((item) => (
         <article key={item.id} className={`messageBubble ${item.role}`}>
           <div className="messageMeta">
-            <span>{item.role === "user" ? "You" : "Assistant"}</span>
-            {item.pending ? <small>Working...</small> : null}
+            <span>{item.role === "user" ? "Operator" : "System"}</span>
+            <small>{item.pending ? "Processing" : "Logged"}</small>
           </div>
           <div className="messageBody">
             {item.pending && item.role === "assistant" ? <span className="typingDots" /> : item.content}
@@ -73,16 +76,20 @@ function Composer({ draft, loading, onChange, onSend }) {
 
   return (
     <section className="composer">
+      <div className="composerMeta">
+        <p className="chatKicker">Prompt Draft</p>
+        <p className="composerHint">Enter sends / Shift+Enter adds a new line</p>
+      </div>
       <textarea
         className="composerInput"
         value={draft}
         onChange={(event) => onChange(event.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="Ask anything about the indexed files. Enter sends, Shift+Enter inserts a newline."
+        placeholder="Draft a precise question about the indexed files and send it to the retrieval desk."
         rows={4}
       />
       <button className="button primary composerButton" onClick={onSend} disabled={loading}>
-        {loading ? "Sending..." : "Send"}
+        {loading ? "Dispatching..." : "Dispatch"}
       </button>
     </section>
   );
@@ -91,28 +98,47 @@ function Composer({ draft, loading, onChange, onSend }) {
 export default function ChatPanel({ workspace }) {
   const { activeSession, authUser, conversation, draft, loading, sources, starterPrompts } = workspace;
   const { send, setDraft, setPrompt } = workspace.actions;
+  const questionCount = conversation.filter((item) => item.role === "user").length;
 
   return (
     <main className="chatStage">
       <header className="chatHeader">
         <div>
-          <p className="chatKicker">Conversation</p>
-          <h2>{activeSession?.title || "Temporary session"}</h2>
+          <p className="chatKicker">Transcript Desk</p>
+          <h2>{activeSession?.title || "Unsaved dispatch"}</h2>
           <p className="chatText">
-            {authUser ? "Messages sync into the selected account session." : "Guest mode can ask immediately, but messages disappear after reload."}
+            {authUser ? "Messages sync into the selected account ledger and remain available for later review." : "Guest mode can ask immediately, but the transcript disappears after reload."}
           </p>
         </div>
         <div className="chatStats">
           <div>
-            <strong>{conversation.filter((item) => item.role === "user").length}</strong>
-            <span>questions</span>
+            <p className="metricLabel">Questions</p>
+            <strong>{questionCount}</strong>
           </div>
           <div>
+            <p className="metricLabel">Sources</p>
             <strong>{sources.length}</strong>
-            <span>sources</span>
+          </div>
+          <div>
+            <p className="metricLabel">Mode</p>
+            <strong>{authUser ? "Linked" : "Guest"}</strong>
           </div>
         </div>
       </header>
+
+      <section className="tickerRow">
+        <p className="tickerLabel">Live desk</p>
+        <div className="tickerStrip">
+          <div className={`tickerChip ${loading ? "live" : ""}`}>
+            <span className="tickerDot" />
+            <span>{loading ? "Model busy" : "Ready for prompt"}</span>
+          </div>
+          <div className="tickerChip">
+            <span className="tickerDot" />
+            <span>{activeSession ? `Session #${activeSession.id}` : "No saved session"}</span>
+          </div>
+        </div>
+      </section>
 
       <MessageThread
         conversation={conversation}
@@ -126,9 +152,10 @@ export default function ChatPanel({ workspace }) {
       <section className="inspector">
         <div className="inspectorHeader">
           <div>
-            <p className="chatKicker">References</p>
+            <p className="chatKicker">Evidence ledger</p>
             <h3>Sources for the latest reply</h3>
           </div>
+          <p className="sourceMeta">{sources.length ? `${sources.length} citation${sources.length === 1 ? "" : "s"}` : "Awaiting retrieval"}</p>
         </div>
         <SourceList sources={sources} />
       </section>
