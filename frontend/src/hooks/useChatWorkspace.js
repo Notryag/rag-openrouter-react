@@ -1,4 +1,5 @@
 import { useEffect, useEffectEvent, useState } from "react";
+import { useLocale } from "./useLocale.js";
 import {
   createChatSession,
   listChatSessions,
@@ -11,19 +12,15 @@ import {
   sendChatMessage,
 } from "../services/chatWorkspaceService";
 
-const STARTER_PROMPTS = [
-  "Summarize the three most important themes in this knowledge base.",
-  "Give me an onboarding checklist based on the indexed documents.",
-  "List the key risks, limitations, and caveats mentioned in the docs.",
-];
-
 function makeStatus(message, tone = "idle") {
   return { message, tone };
 }
 
 export function useChatWorkspace() {
+  const { copy } = useLocale();
+  const statusCopy = copy.status;
   const [draft, setDraft] = useState("");
-  const [status, setStatus] = useState(makeStatus("Ready to start."));
+  const [status, setStatus] = useState(makeStatus(statusCopy.ready));
   const [authForm, setAuthForm] = useState({ username: "", password: "" });
   const [authUser, setAuthUser] = useState(null);
   const [sessions, setSessions] = useState([]);
@@ -39,7 +36,7 @@ export function useChatWorkspace() {
     setConversation(nextConversation);
     setSources([]);
     if (announce) {
-      setStatus(makeStatus("Session loaded.", "success"));
+      setStatus(makeStatus(statusCopy.sessionLoaded, "success"));
     }
   });
 
@@ -47,7 +44,7 @@ export function useChatWorkspace() {
     try {
       await openSession(sessionId);
     } catch (error) {
-      setStatus(makeStatus(`Failed to load session: ${error.message}`, "error"));
+      setStatus(makeStatus(statusCopy.failedToLoadSession(error.message), "error"));
     }
   };
 
@@ -72,7 +69,7 @@ export function useChatWorkspace() {
       return;
     }
     setAuthUser(user);
-    setStatus(makeStatus(`Signed in as ${user.username}.`, "success"));
+    setStatus(makeStatus(statusCopy.signedInAs(user.username), "success"));
     await refreshSessions();
   });
 
@@ -87,30 +84,30 @@ export function useChatWorkspace() {
   const handleRegister = async () => {
     const username = authForm.username.trim();
     if (!username || !authForm.password.trim()) {
-      setStatus(makeStatus("Username and password are required.", "error"));
+      setStatus(makeStatus(statusCopy.credentialsRequired, "error"));
       return;
     }
     try {
       await registerUser(username, authForm.password);
-      setStatus(makeStatus("Registered successfully. Please sign in.", "success"));
+      setStatus(makeStatus(statusCopy.registerSuccess, "success"));
     } catch (error) {
-      setStatus(makeStatus(`Register failed: ${error.message}`, "error"));
+      setStatus(makeStatus(statusCopy.registerFailed(error.message), "error"));
     }
   };
 
   const handleLogin = async () => {
     const username = authForm.username.trim();
     if (!username || !authForm.password.trim()) {
-      setStatus(makeStatus("Username and password are required.", "error"));
+      setStatus(makeStatus(statusCopy.credentialsRequired, "error"));
       return;
     }
     try {
       const result = await loginUser(username, authForm.password);
       setAuthUser({ username: result.username });
-      setStatus(makeStatus(`Signed in as ${result.username}.`, "success"));
+      setStatus(makeStatus(statusCopy.signedInAs(result.username), "success"));
       await refreshSessions();
     } catch (error) {
-      setStatus(makeStatus(`Sign-in failed: ${error.message}`, "error"));
+      setStatus(makeStatus(statusCopy.signInFailed(error.message), "error"));
     }
   };
 
@@ -121,27 +118,27 @@ export function useChatWorkspace() {
     setActiveSessionId(null);
     setConversation([]);
     setSources([]);
-    setStatus(makeStatus("Signed out."));
+    setStatus(makeStatus(statusCopy.signedOut));
   };
 
   const handleCreateSession = async () => {
     try {
-      const created = await createChatSession("New chat");
+      const created = await createChatSession(copy.sidebar.newChatTitle);
       await refreshSessions(created.id);
-      setStatus(makeStatus("Created a new session.", "success"));
+      setStatus(makeStatus(statusCopy.createdSession, "success"));
     } catch (error) {
-      setStatus(makeStatus(`Create session failed: ${error.message}`, "error"));
+      setStatus(makeStatus(statusCopy.createSessionFailed(error.message), "error"));
     }
   };
 
   const handleIngest = async () => {
     setIngesting(true);
-    setStatus(makeStatus("Preparing ingestion...", "busy"));
+    setStatus(makeStatus(statusCopy.preparingIngest, "busy"));
     try {
-      const result = await runIngestJob((message, tone) => setStatus(makeStatus(message, tone)));
+      const result = await runIngestJob(statusCopy, (message, tone) => setStatus(makeStatus(message, tone)));
       setStatus(makeStatus(result, "success"));
     } catch (error) {
-      setStatus(makeStatus(`Ingest failed: ${error.message}`, "error"));
+      setStatus(makeStatus(error.message, "error"));
     } finally {
       setIngesting(false);
     }
@@ -150,7 +147,7 @@ export function useChatWorkspace() {
   const handleSend = async () => {
     const question = draft.trim();
     if (!question) {
-      setStatus(makeStatus("Enter a question first.", "error"));
+      setStatus(makeStatus(statusCopy.enterQuestion, "error"));
       return;
     }
 
@@ -158,7 +155,7 @@ export function useChatWorkspace() {
     setDraft("");
     setLoading(true);
     setSources([]);
-    setStatus(makeStatus("Generating a response...", "busy"));
+    setStatus(makeStatus(statusCopy.generating, "busy"));
     setConversation((current) => [
       ...current,
       { id: `pending-user-${pendingId}`, role: "user", content: question, pending: true },
@@ -175,15 +172,15 @@ export function useChatWorkspace() {
         setConversation((current) => [
           ...current.filter((item) => !item.pending),
           { id: `user-${pendingId}`, role: "user", content: question },
-          { id: `assistant-${pendingId}`, role: "assistant", content: result.answer || "No answer returned." },
+          { id: `assistant-${pendingId}`, role: "assistant", content: result.answer || statusCopy.noAnswer },
         ]);
       }
 
-      setStatus(makeStatus("Response ready.", "success"));
+      setStatus(makeStatus(statusCopy.responseReady, "success"));
     } catch (error) {
       setDraft(question);
       setConversation((current) => current.filter((item) => !item.pending));
-      setStatus(makeStatus(`Chat failed: ${error.message}`, "error"));
+      setStatus(makeStatus(statusCopy.chatFailed(error.message), "error"));
     } finally {
       setLoading(false);
     }
@@ -200,7 +197,7 @@ export function useChatWorkspace() {
     loading,
     sessions,
     sources,
-    starterPrompts: STARTER_PROMPTS,
+    starterPrompts: copy.chat.starterPrompts,
     status,
     actions: {
       createSession: handleCreateSession,

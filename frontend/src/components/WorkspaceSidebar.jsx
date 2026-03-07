@@ -1,41 +1,46 @@
+import { useLocale } from "../hooks/useLocale.js";
+
 function AuthCard({ authForm, authUser, onChange, onLogin, onLogout, onRegister }) {
+  const { copy } = useLocale();
+  const sidebarCopy = copy.sidebar;
+
   if (authUser) {
     return (
       <section className="sidebarCard">
-        <p className="cardEyebrow">Account</p>
+        <p className="cardEyebrow">{sidebarCopy.accountEyebrow}</p>
         <h2>{authUser.username}</h2>
-        <p className="cardMuted">Signed in. Session history will be stored on your account.</p>
-        <p className="authHint">Ledger mode active</p>
-        <button className="button secondary" onClick={onLogout}>Sign out</button>
+        <p className="cardMuted">{sidebarCopy.accountSignedIn}</p>
+        <p className="authHint">{sidebarCopy.accountActive}</p>
+        <button className="button secondary" onClick={onLogout}>{sidebarCopy.signOut}</button>
       </section>
     );
   }
 
   return (
     <section className="sidebarCard">
-      <p className="cardEyebrow">Account</p>
-      <h2>Sign in to keep sessions</h2>
-      <p className="cardMuted">Unlock a persistent conversation ledger and restore previous runs.</p>
+      <p className="cardEyebrow">{sidebarCopy.accountEyebrow}</p>
+      <h2>{sidebarCopy.signInTitle}</h2>
+      <p className="cardMuted">{sidebarCopy.signInDescription}</p>
       <div className="fieldStack">
         <input
           className="textInput"
           value={authForm.username}
           onChange={(event) => onChange("username", event.target.value)}
-          placeholder="username"
+          placeholder={sidebarCopy.usernamePlaceholder}
         />
         <input
           className="textInput"
           type="password"
           value={authForm.password}
           onChange={(event) => onChange("password", event.target.value)}
-          placeholder="password"
+          placeholder={sidebarCopy.passwordPlaceholder}
         />
       </div>
       <div className="buttonRow">
-        <button className="button ghost" onClick={onRegister}>Register</button>
-        <button className="button secondary" onClick={onLogin}>Sign in</button>
+        <button className="button ghost" onClick={onRegister}>{sidebarCopy.register}</button>
+        <button className="button secondary" onClick={onLogin}>{sidebarCopy.signIn}</button>
       </div>
-      <p className="authHint">Guest mode remains available</p>
+      <p className="authHint">{sidebarCopy.guestAvailable}</p>
     </section>
   );
 }
@@ -43,24 +48,45 @@ function AuthCard({ authForm, authUser, onChange, onLogin, onLogout, onRegister 
 export default function WorkspaceSidebar({ workspace }) {
   const { activeSessionId, authForm, authUser, ingesting, sessions, status } = workspace;
   const { createSession, ingest, login, logout, openSession, register, updateAuthField } = workspace.actions;
+  const { copy, locale, locales, setLocale } = useLocale();
+  const sidebarCopy = copy.sidebar;
+  const getSessionTitle = (title) => (title === "New chat" ? sidebarCopy.newChatTitle : title);
 
   return (
     <aside className="sidebar">
       <div className="brandBlock">
-        <p className="brandKicker">Terminal Editorial / RAG</p>
-        <h1>Retrieval Ledger</h1>
-        <p className="brandText">A live research desk for indexed documents, persistent sessions, and grounded replies.</p>
+        <p className="brandKicker">{sidebarCopy.brandKicker}</p>
+        <h1>{sidebarCopy.title}</h1>
+        <p className="brandText">{sidebarCopy.description}</p>
         <div className="brandMetrics">
           <div>
-            <p className="metricLabel">Mode</p>
-            <strong>{authUser ? "Account" : "Guest"}</strong>
+            <p className="metricLabel">{sidebarCopy.mode}</p>
+            <strong>{authUser ? sidebarCopy.accountMode : sidebarCopy.guestMode}</strong>
           </div>
           <div>
-            <p className="metricLabel">Sessions</p>
+            <p className="metricLabel">{sidebarCopy.sessions}</p>
             <strong>{authUser ? sessions.length : "--"}</strong>
           </div>
         </div>
       </div>
+
+      <section className="sidebarCard">
+        <p className="cardEyebrow">{sidebarCopy.languageEyebrow}</p>
+        <div className="cardHeader">
+          <h2>{sidebarCopy.languageTitle}</h2>
+          <div className="buttonRow">
+            {locales.map((option) => (
+              <button
+                key={option.value}
+                className={`button compact ${locale === option.value ? "secondary" : "ghost"}`}
+                onClick={() => setLocale(option.value)}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <AuthCard
         authForm={authForm}
@@ -72,22 +98,22 @@ export default function WorkspaceSidebar({ workspace }) {
       />
 
       <section className="sidebarCard">
-        <p className="cardEyebrow">Knowledge Base</p>
-        <h2>Recompile the archive</h2>
-        <p className="cardMuted">Re-index the `data/` directory and refresh the retrieval corpus used by the assistant.</p>
+        <p className="cardEyebrow">{sidebarCopy.knowledgeEyebrow}</p>
+        <h2>{sidebarCopy.knowledgeTitle}</h2>
+        <p className="cardMuted">{sidebarCopy.knowledgeDescription}</p>
         <button className="button primary" onClick={ingest} disabled={ingesting}>
-          {ingesting ? "Indexing..." : "Run ingest pass"}
+          {ingesting ? sidebarCopy.ingestLoading : sidebarCopy.ingest}
         </button>
       </section>
 
       <section className="sidebarCard">
         <div className="cardHeader">
           <div>
-            <p className="cardEyebrow">Sessions</p>
-            <h2>Conversation ledger</h2>
+            <p className="cardEyebrow">{sidebarCopy.sessionEyebrow}</p>
+            <h2>{sidebarCopy.sessionTitle}</h2>
           </div>
           {authUser ? (
-            <button className="button ghost compact" onClick={createSession}>New</button>
+            <button className="button ghost compact" onClick={createSession}>{sidebarCopy.new}</button>
           ) : null}
         </div>
         {authUser ? (
@@ -99,22 +125,22 @@ export default function WorkspaceSidebar({ workspace }) {
                   className={`sessionItem ${session.id === activeSessionId ? "active" : ""}`}
                   onClick={() => openSession(session.id)}
                 >
-                  <span className="sessionIndex">Entry #{session.id}</span>
-                  <span>{session.title}</span>
+                  <span className="sessionIndex">{sidebarCopy.sessionEntry(session.id)}</span>
+                  <span>{getSessionTitle(session.title)}</span>
                   <small>#{session.id}</small>
                 </button>
               ))}
             </div>
           ) : (
-            <p className="emptyNote">No saved entries yet. The first successful message will create one.</p>
+            <p className="emptyNote">{sidebarCopy.emptySaved}</p>
           )
         ) : (
-          <p className="emptyNote">Guest mode can chat immediately, but the ledger is not persisted.</p>
+          <p className="emptyNote">{sidebarCopy.emptyGuest}</p>
         )}
       </section>
 
       <section className={`statusCard ${status.tone}`}>
-        <p className="cardEyebrow">System status</p>
+        <p className="cardEyebrow">{sidebarCopy.systemStatus}</p>
         <strong>{status.message}</strong>
       </section>
     </aside>

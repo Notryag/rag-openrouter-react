@@ -1,10 +1,7 @@
+import { getLocale, getMessages } from "./state/localeMessages.js";
+
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 const TOKEN_KEY = "rag_access_token";
-
-const FIELD_LABELS = {
-  username: "Username",
-  password: "Password",
-};
 
 function getAuthHeaders() {
   const token = localStorage.getItem(TOKEN_KEY);
@@ -12,21 +9,22 @@ function getAuthHeaders() {
 }
 
 function formatValidationError(item) {
+  const apiCopy = getMessages(getLocale()).api;
   const field = item?.loc?.[item.loc.length - 1];
-  const fieldLabel = FIELD_LABELS[field] || "Field";
+  const fieldLabel = apiCopy.fieldLabels[field] || apiCopy.fieldFallback;
 
   if (item?.type === "string_too_short" && item?.ctx?.min_length) {
-    return `${fieldLabel} must be at least ${item.ctx.min_length} characters.`;
+    return apiCopy.tooShort(fieldLabel, item.ctx.min_length);
   }
 
   if (item?.type === "string_too_long" && item?.ctx?.max_length) {
-    return `${fieldLabel} must be at most ${item.ctx.max_length} characters.`;
+    return apiCopy.tooLong(fieldLabel, item.ctx.max_length);
   }
 
-  return item?.msg || "Invalid input.";
+  return item?.msg || apiCopy.invalidInput;
 }
 
-function formatErrorDetail(detail, fallback = "Request failed") {
+function formatErrorDetail(detail, fallback = getMessages(getLocale()).api.requestFailed) {
   if (typeof detail === "string" && detail.trim()) {
     return detail;
   }
@@ -48,14 +46,15 @@ function formatErrorDetail(detail, fallback = "Request failed") {
 
 async function handleResponse(res) {
   if (!res.ok) {
-    let detail = "Request failed";
+    const fallback = getMessages(getLocale()).api.requestFailed;
+    let detail = fallback;
     try {
       const data = await res.json();
-      detail = formatErrorDetail(data.detail ?? data, "Request failed");
+      detail = formatErrorDetail(data.detail ?? data, fallback);
     } catch {
-      detail = formatErrorDetail(await res.text(), "Request failed");
+      detail = formatErrorDetail(await res.text(), fallback);
     }
-    throw new Error(formatErrorDetail(detail, "Request failed"));
+    throw new Error(formatErrorDetail(detail, fallback));
   }
   return res.json();
 }

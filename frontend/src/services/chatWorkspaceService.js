@@ -74,24 +74,23 @@ export async function sendChatMessage(question, sessionId) {
   return chat(question, 3, sessionId);
 }
 
-export async function runIngestJob(onProgress) {
+export async function runIngestJob(messages, onProgress) {
   const createdJob = await startIngestJob(true);
-  onProgress(`Ingest job #${createdJob.id} queued.`, "busy");
+  onProgress(messages.ingestQueued(createdJob.id), "busy");
 
   const deadline = Date.now() + 3 * 60 * 1000;
   while (Date.now() < deadline) {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     const job = await getIngestJob(createdJob.id);
     if (job.status === "queued" || job.status === "running") {
-      onProgress(`Ingest job #${job.id} ${job.status}...`, "busy");
+      onProgress(messages.ingestRunning(job.id, job.status), "busy");
       continue;
     }
     if (job.status === "succeeded") {
-      const failed = job.failed?.length ? `, failed ${job.failed.length} files` : "";
-      return `Indexed ${job.files} files and ${job.chunks} chunks${failed}.`;
+      return messages.ingestSucceeded(job.files, job.chunks, job.failed?.length || 0);
     }
-    throw new Error(job.error || "Ingest job failed.");
+    throw new Error(messages.ingestFailed(job.error || messages.ingestJobFailed));
   }
 
-  throw new Error("Ingest job timed out after 3 minutes.");
+  throw new Error(messages.ingestTimedOut);
 }

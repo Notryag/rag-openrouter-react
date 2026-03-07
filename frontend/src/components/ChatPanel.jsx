@@ -1,10 +1,11 @@
 import { usePinnedAutoScroll } from "../hooks/usePinnedAutoScroll.js";
+import { useLocale } from "../hooks/useLocale.js";
 
-function SourceList({ sources }) {
+function SourceList({ copy, sources }) {
   if (!sources.length) {
     return (
       <div className="sourceEmpty">
-        <p>No citations are shown yet. Ask a new question to inspect the retrieved documents here.</p>
+        <p>{copy.emptySources}</p>
       </div>
     );
   }
@@ -13,15 +14,15 @@ function SourceList({ sources }) {
     <div className="sourceList">
       {sources.map((source, index) => (
         <article key={`${source.source || "source"}-${index}`} className="sourceCard">
-          <strong>{source.source || "Unknown source"}</strong>
-          <span>{source.page !== undefined ? `page ${source.page}` : "retrieved chunk"}</span>
+          <strong>{source.source || copy.unknownSource}</strong>
+          <span>{source.page !== undefined ? copy.page(source.page) : copy.retrievedChunk}</span>
         </article>
       ))}
     </div>
   );
 }
 
-function MessageThread({ conversation, loading, onPickPrompt, starterPrompts }) {
+function MessageThread({ conversation, copy, loading, onPickPrompt, starterPrompts }) {
   const scrollKey = `${loading ? "loading" : "idle"}:${conversation
     .map((item) => `${item.id}:${item.pending ? "pending" : "ready"}`)
     .join("|")}`;
@@ -31,14 +32,14 @@ function MessageThread({ conversation, loading, onPickPrompt, starterPrompts }) 
     return (
       <section className="threadEmpty">
         <div className="threadLead">
-          <p className="threadEyebrow">Issue 01 / Brief</p>
-          <h2>Ask against the indexed archive</h2>
-          <p>Start with a pointed question, then inspect the reply and the supporting citations in the same working surface.</p>
+          <p className="threadEyebrow">{copy.emptyEyebrow}</p>
+          <h2>{copy.emptyTitle}</h2>
+          <p>{copy.emptyDescription}</p>
         </div>
         <div className="promptGrid">
           {starterPrompts.map((prompt, index) => (
             <button key={prompt} className="promptCard" onClick={() => onPickPrompt(prompt)}>
-              <span className="promptIndex">Prompt {String(index + 1).padStart(2, "0")}</span>
+              <span className="promptIndex">{copy.promptLabel(index)}</span>
               <span className="promptText">{prompt}</span>
             </button>
           ))}
@@ -52,21 +53,21 @@ function MessageThread({ conversation, loading, onPickPrompt, starterPrompts }) 
       {conversation.map((item) => (
         <article key={item.id} className={`messageBubble ${item.role}`}>
           <div className="messageMeta">
-            <span>{item.role === "user" ? "Operator" : "System"}</span>
-            <small>{item.pending ? "Processing" : "Logged"}</small>
+            <span>{item.role === "user" ? copy.userRole : copy.assistantRole}</span>
+            <small>{item.pending ? copy.processing : copy.logged}</small>
           </div>
           <div className="messageBody">
             {item.pending && item.role === "assistant" ? <span className="typingDots" /> : item.content}
           </div>
         </article>
       ))}
-      {loading ? <div className="threadHint">Waiting for the model to finish the current reply...</div> : null}
+      {loading ? <div className="threadHint">{copy.waiting}</div> : null}
       <div ref={endRef} className="messageListEnd" aria-hidden="true" />
     </section>
   );
 }
 
-function Composer({ draft, loading, onChange, onSend }) {
+function Composer({ copy, draft, loading, onChange, onSend }) {
   const handleKeyDown = (event) => {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
@@ -77,19 +78,19 @@ function Composer({ draft, loading, onChange, onSend }) {
   return (
     <section className="composer">
       <div className="composerMeta">
-        <p className="chatKicker">Prompt Draft</p>
-        <p className="composerHint">Enter sends / Shift+Enter adds a new line</p>
+        <p className="chatKicker">{copy.composerTitle}</p>
+        <p className="composerHint">{copy.composerHint}</p>
       </div>
       <textarea
         className="composerInput"
         value={draft}
         onChange={(event) => onChange(event.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="Draft a precise question about the indexed files and send it to the retrieval desk."
+        placeholder={copy.composerPlaceholder}
         rows={4}
       />
       <button className="button primary composerButton" onClick={onSend} disabled={loading}>
-        {loading ? "Dispatching..." : "Dispatch"}
+        {loading ? copy.sendLoading : copy.send}
       </button>
     </section>
   );
@@ -99,65 +100,72 @@ export default function ChatPanel({ workspace }) {
   const { activeSession, authUser, conversation, draft, loading, sources, starterPrompts } = workspace;
   const { send, setDraft, setPrompt } = workspace.actions;
   const questionCount = conversation.filter((item) => item.role === "user").length;
+  const { copy } = useLocale();
+  const chatCopy = copy.chat;
+  const sessionTitle =
+    activeSession?.title === "New chat" ? copy.sidebar.newChatTitle : activeSession?.title || chatCopy.unsavedTitle;
 
   return (
     <main className="chatStage">
       <header className="chatHeader">
         <div>
-          <p className="chatKicker">Transcript Desk</p>
-          <h2>{activeSession?.title || "Unsaved dispatch"}</h2>
+          <p className="chatKicker">{chatCopy.headerKicker}</p>
+          <h2>{sessionTitle}</h2>
           <p className="chatText">
-            {authUser ? "Messages sync into the selected account ledger and remain available for later review." : "Guest mode can ask immediately, but the transcript disappears after reload."}
+            {authUser ? chatCopy.accountDescription : chatCopy.guestDescription}
           </p>
         </div>
         <div className="chatStats">
           <div>
-            <p className="metricLabel">Questions</p>
+            <p className="metricLabel">{chatCopy.questionCount}</p>
             <strong>{questionCount}</strong>
           </div>
           <div>
-            <p className="metricLabel">Sources</p>
+            <p className="metricLabel">{chatCopy.sourceCount}</p>
             <strong>{sources.length}</strong>
           </div>
           <div>
-            <p className="metricLabel">Mode</p>
-            <strong>{authUser ? "Linked" : "Guest"}</strong>
+            <p className="metricLabel">{chatCopy.mode}</p>
+            <strong>{authUser ? chatCopy.linkedMode : chatCopy.guestMode}</strong>
           </div>
         </div>
       </header>
 
       <section className="tickerRow">
-        <p className="tickerLabel">Live desk</p>
+        <p className="tickerLabel">{chatCopy.liveDesk}</p>
         <div className="tickerStrip">
           <div className={`tickerChip ${loading ? "live" : ""}`}>
             <span className="tickerDot" />
-            <span>{loading ? "Model busy" : "Ready for prompt"}</span>
+            <span>{loading ? chatCopy.modelBusy : chatCopy.ready}</span>
           </div>
           <div className="tickerChip">
             <span className="tickerDot" />
-            <span>{activeSession ? `Session #${activeSession.id}` : "No saved session"}</span>
+            <span>{activeSession ? chatCopy.sessionLabel(activeSession.id) : chatCopy.noSession}</span>
           </div>
         </div>
       </section>
 
       <MessageThread
         conversation={conversation}
+        copy={chatCopy}
         loading={loading}
         onPickPrompt={setPrompt}
         starterPrompts={starterPrompts}
       />
 
-      <Composer draft={draft} loading={loading} onChange={setDraft} onSend={send} />
+      <Composer copy={chatCopy} draft={draft} loading={loading} onChange={setDraft} onSend={send} />
 
       <section className="inspector">
         <div className="inspectorHeader">
           <div>
-            <p className="chatKicker">Evidence ledger</p>
-            <h3>Sources for the latest reply</h3>
+            <p className="chatKicker">{chatCopy.inspectorKicker}</p>
+            <h3>{chatCopy.inspectorTitle}</h3>
           </div>
-          <p className="sourceMeta">{sources.length ? `${sources.length} citation${sources.length === 1 ? "" : "s"}` : "Awaiting retrieval"}</p>
+          <p className="sourceMeta">
+            {sources.length ? chatCopy.citationCount(sources.length) : chatCopy.awaitingRetrieval}
+          </p>
         </div>
-        <SourceList sources={sources} />
+        <SourceList copy={chatCopy} sources={sources} />
       </section>
     </main>
   );
